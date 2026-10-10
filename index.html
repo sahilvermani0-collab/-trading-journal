@@ -5,980 +5,185 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<title>Trading Journal — Cloud Sync</title>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
+<title>Trading Journal</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#111827">
+<link rel="apple-touch-icon" href="icon-192.png">
 <style>
 *{box-sizing:border-box}
-html,body{
-  margin:0;
-  padding:0;
-  background:#f5f7fb;
-  color:#172033;
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif
-}
+html,body{margin:0;padding:0;background:#f5f7fb;color:#172033;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif}
 button,input,select,textarea{font:inherit}
 button{cursor:pointer}
-
 .app{min-height:100vh}
-
-.topbar{
-  height:62px;
-  background:#111827;
-  color:#fff;
-  display:flex;
-  align-items:center;
-  padding:0 16px;
-  gap:12px;
-  position:sticky;
-  top:0;
-  z-index:30
-}
-
-.menu{
-  border:0;
-  background:#263247;
-  color:#fff;
-  border-radius:10px;
-  width:42px;
-  height:42px;
-  font-size:22px
-}
-
+.topbar{height:62px;background:#111827;color:#fff;display:flex;align-items:center;padding:0 16px;gap:12px;position:sticky;top:0;z-index:30}
+.menu{border:0;background:#263247;color:#fff;border-radius:10px;width:42px;height:42px;font-size:22px}
 .brand{font-size:19px;font-weight:800}
-
-.top-actions{
-  margin-left:auto;
-  display:flex;
-  gap:8px
-}
-
-.top-actions button,.primary{
-  border:0;
-  border-radius:10px;
-  padding:10px 13px;
-  background:#2563eb;
-  color:#fff;
-  font-weight:700
-}
-
-.top-actions .green{background:#059669}
-.top-actions .red{background:#dc2626}
-
-.layout{
-  display:flex;
-  min-height:calc(100vh - 62px)
-}
-
-.sidebar{
-  width:230px;
-  background:#fff;
-  border-right:1px solid #e5e7eb;
-  padding:14px;
-  flex:none
-}
-
-.navbtn{
-  width:100%;
-  border:0;
-  background:transparent;
-  text-align:left;
-  padding:13px 12px;
-  border-radius:10px;
-  margin-bottom:6px;
-  font-weight:700;
-  color:#475569
-}
-
-.navbtn.active,.navbtn:hover{
-  background:#e8efff;
-  color:#1d4ed8
-}
-
-.main{
-  flex:1;
-  min-width:0;
-  padding:18px
-}
-
-.page{display:none}
-.page.active{display:block}
-
-h1{
-  font-size:24px;
-  margin:0 0 16px
-}
-
-.sub{
-  color:#64748b;
-  font-size:13px
-}
-
-.cards{
-  display:grid;
-  grid-template-columns:repeat(4,1fr);
-  gap:12px;
-  margin-bottom:18px
-}
-
-.card{
-  background:#fff;
-  border:1px solid #e5e7eb;
-  border-radius:14px;
-  padding:16px
-}
-
-.card .label{
-  font-size:12px;
-  color:#64748b;
-  font-weight:700
-}
-
-.card .value{
-  font-size:23px;
-  font-weight:800;
-  margin-top:6px
-}
-
-.toolbar{
-  display:flex;
-  gap:8px;
-  flex-wrap:wrap;
-  margin-bottom:12px
-}
-
-.toolbar input,
-.toolbar select,
-.form input,
-.form select,
-.form textarea{
-  border:1px solid #d7dce5;
-  background:#fff;
-  border-radius:10px;
-  padding:11px 12px;
-  outline:none;
-  width:100%
-}
-
-.toolbar input,
-.toolbar select{width:auto}
-
-.tablewrap{
-  background:#fff;
-  border:1px solid #e5e7eb;
-  border-radius:14px;
-  overflow:auto
-}
-
-table{
-  width:100%;
-  border-collapse:collapse;
-  min-width:920px
-}
-
-th,td{
-  padding:11px 10px;
-  border-bottom:1px solid #eef1f5;
-  text-align:left;
-  font-size:13px;
-  white-space:nowrap
-}
-
-th{
-  background:#f8fafc;
-  color:#475569;
-  font-size:12px
-}
-
-.win{
-  color:#059669;
-  font-weight:800
-}
-
-.loss{
-  color:#dc2626;
-  font-weight:800
-}
-
-.empty{
-  text-align:center;
-  padding:35px;
-  color:#64748b
-}
-
-.formgrid{
-  display:grid;
-  grid-template-columns:repeat(2,1fr);
-  gap:12px
-}
-
-.form label{
-  display:block;
-  font-size:12px;
-  font-weight:800;
-  color:#475569;
-  margin-bottom:6px
-}
-
+.top-actions{margin-left:auto;display:flex;gap:8px}
+.top-actions button,.primary{border:0;border-radius:10px;padding:10px 13px;background:#2563eb;color:#fff;font-weight:700}
+.top-actions .green{background:#059669}.top-actions .red{background:#dc2626}
+.layout{display:flex;min-height:calc(100vh - 62px)}
+.sidebar{width:230px;background:#fff;border-right:1px solid #e5e7eb;padding:14px;flex:none}
+.navbtn{width:100%;border:0;background:transparent;text-align:left;padding:13px 12px;border-radius:10px;margin-bottom:6px;font-weight:700;color:#475569}
+.navbtn.active,.navbtn:hover{background:#e8efff;color:#1d4ed8}
+.main{flex:1;min-width:0;padding:18px}
+.page{display:none}.page.active{display:block}
+h1{font-size:24px;margin:0 0 16px}.sub{color:#64748b;font-size:13px}
+.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
+.card{background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:16px}
+.card .label{font-size:12px;color:#64748b;font-weight:700}.card .value{font-size:23px;font-weight:800;margin-top:6px}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.toolbar input,.toolbar select,.form input,.form select,.form textarea{border:1px solid #d7dce5;background:#fff;border-radius:10px;padding:11px 12px;outline:none;width:100%}
+.toolbar input,.toolbar select{width:auto}
+.tablewrap{background:#fff;border:1px solid #e5e7eb;border-radius:14px;overflow:auto}
+table{width:100%;border-collapse:collapse;min-width:920px}
+th,td{padding:11px 10px;border-bottom:1px solid #eef1f5;text-align:left;font-size:13px;white-space:nowrap}
+th{background:#f8fafc;color:#475569;font-size:12px}
+.win{color:#059669;font-weight:800}.loss{color:#dc2626;font-weight:800}
+.empty{text-align:center;padding:35px;color:#64748b}
+.formgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.form label{display:block;font-size:12px;font-weight:800;color:#475569;margin-bottom:6px}
 .full{grid-column:1/-1}
-
-.modal{
-  display:none;
-  position:fixed;
-  inset:0;
-  background:rgba(15,23,42,.48);
-  z-index:100;
-  align-items:center;
-  justify-content:center;
-  padding:16px
-}
-
+.modal{display:none;position:fixed;inset:0;background:rgba(15,23,42,.48);z-index:100;align-items:center;justify-content:center;padding:16px}
 .modal.show{display:flex}
-
-.modalbox{
-  background:#fff;
-  border-radius:18px;
-  width:min(560px,100%);
-  max-height:90vh;
-  overflow:auto;
-  padding:18px
-}
-
-.modalhead{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  margin-bottom:15px
-}
-
-.modalhead h2{
-  margin:0;
-  font-size:20px
-}
-
-.x{
-  border:0;
-  background:#eef2f7;
-  border-radius:9px;
-  width:36px;
-  height:36px
-}
-
-.actions{
-  display:flex;
-  gap:8px;
-  justify-content:flex-end;
-  margin-top:16px
-}
-
-.secondary{
-  border:0;
-  background:#e9edf3;
-  color:#334155;
-  border-radius:10px;
-  padding:11px 14px;
-  font-weight:700
-}
-
-.ledger-summary{
-  display:grid;
-  grid-template-columns:repeat(4,1fr);
-  gap:10px;
-  margin-bottom:14px
-}
-
+.modalbox{background:#fff;border-radius:18px;width:min(560px,100%);max-height:90vh;overflow:auto;padding:18px}
+.modalhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px}
+.modalhead h2{margin:0;font-size:20px}.x{border:0;background:#eef2f7;border-radius:9px;width:36px;height:36px}
+.actions{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}.secondary{border:0;background:#e9edf3;color:#334155;border-radius:10px;padding:11px 14px;font-weight:700}
+.ledger-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
 .ledger-summary .card{padding:13px}
-
-.note{
-  font-size:12px;
-  color:#64748b;
-  margin-top:8px
-}
-
-.cloud-gate{
-  position:fixed;
-  inset:0;
-  background:#f5f7fb;
-  z-index:9999;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  padding:18px
-}
-
-.cloud-box{
-  width:min(520px,100%);
-  background:#fff;
-  border:1px solid #e5e7eb;
-  border-radius:18px;
-  padding:22px;
-  box-shadow:0 15px 45px rgba(15,23,42,.12)
-}
-
-.cloud-box h2{margin:0 0 8px}
-
-.cloud-box p{
-  color:#64748b;
-  font-size:13px;
-  line-height:1.5
-}
-
-.cloud-box input{
-  width:100%;
-  padding:12px;
-  border:1px solid #d7dce5;
-  border-radius:10px;
-  margin:6px 0 10px
-}
-
-.cloud-box button{
-  border:0;
-  border-radius:10px;
-  padding:12px 15px;
-  background:#2563eb;
-  color:#fff;
-  font-weight:800
-}
-
-.cloud-status{
-  font-size:12px;
-  margin-top:10px;
-  color:#64748b
-}
-
-.sync-pill{
-  font-size:11px;
-  background:#e8f5ee;
-  color:#047857;
-  border-radius:999px;
-  padding:5px 8px;
-  font-weight:800
-}
-
+.note{font-size:12px;color:#64748b;margin-top:8px}
 @media(max-width:760px){
-  .topbar{padding:0 12px}
-  .brand{font-size:17px}
-  .top-actions button{
-    padding:9px 10px;
-    font-size:12px
-  }
-
-  .layout{display:block}
-
-  .sidebar{
-    position:fixed;
-    top:62px;
-    bottom:0;
-    left:-250px;
-    width:240px;
-    z-index:50;
-    box-shadow:8px 0 25px rgba(0,0,0,.12);
-    transition:left .2s
-  }
-
-  .sidebar.open{left:0}
-
-  .main{padding:13px}
-
-  .cards{
-    grid-template-columns:repeat(2,1fr);
-    gap:9px
-  }
-
-  .card{padding:12px}
-
-  .card .value{font-size:19px}
-
-  .formgrid{grid-template-columns:1fr}
-  .full{grid-column:auto}
-
-  .toolbar>*{
-    flex:1;
-    min-width:130px
-  }
-
-  .toolbar input,
-  .toolbar select{width:100%}
-
-  h1{font-size:21px}
+ .topbar{padding:0 12px}.brand{font-size:17px}.top-actions button{padding:9px 10px;font-size:12px}
+ .layout{display:block}.sidebar{position:fixed;top:62px;bottom:0;left:-250px;width:240px;z-index:50;box-shadow:8px 0 25px rgba(0,0,0,.12);transition:left .2s}
+ .sidebar.open{left:0}.main{padding:13px}
+ .cards{grid-template-columns:repeat(2,1fr);gap:9px}.card{padding:12px}.card .value{font-size:19px}
+ .formgrid{grid-template-columns:1fr}.full{grid-column:auto}
+ .toolbar>*{flex:1;min-width:130px}.toolbar input,.toolbar select{width:100%}
+ h1{font-size:21px}
 }
 </style>
 </head>
-
 <body>
-
-<div class="cloud-gate" id="cloudGate">
-  <div class="cloud-box">
-    <h2>☁️ Trading Journal Cloud Sync</h2>
-
-    <p>
-      Phone aur PC par same data ke liye Supabase connect karo.
-      Sirf <b>Project URL</b> aur <b>Publishable/anon key</b> use karo.
-      <b>Service-role/secret key kabhi mat daalna.</b>
-    </p>
-
-    <label><b>Supabase Project URL</b></label>
-
-    <input
-      id="sbUrl"
-      value="https://nmwbnwngetmsyejskhap.supabase.co"
-      placeholder="https://xxxxx.supabase.co"
-      autocomplete="off"
-    >
-
-    <label><b>Supabase Publishable / anon Key</b></label>
-
-    <input
-      id="sbKey"
-      value="sb_publishable_HYUuSYlojGnsmGeHOypSDQ_XLRjQFMO"
-      placeholder="sb_publishable_... or anon key"
-      autocomplete="off"
-    >
-
-    <button id="connectCloud" type="button">
-      Connect Cloud
-    </button>
-
-    <div class="cloud-status" id="cloudStatus">
-      Cloud connection required for cross-device sync.
-    </div>
-  </div>
-</div>
-
 <div class="app">
-
 <header class="topbar">
-
   <button class="menu" id="menuBtn" type="button">☰</button>
-
-  <div class="brand">
-    📊 Trading Journal
-    <span class="sync-pill" id="syncPill">Cloud</span>
-  </div>
-
+  <div class="brand">📊 Trading Journal</div>
   <div class="top-actions">
-
-    <button id="accountBtn" type="button">
-      Account
-    </button>
-
-    <button id="depositBtn" class="green" type="button">
-      Deposit
-    </button>
-
-    <button id="withdrawBtn" class="red" type="button">
-      Withdraw
-    </button>
-
+    <button id="accountBtn" type="button">Account</button>
+    <button id="depositBtn" class="green" type="button">Deposit</button>
+    <button id="withdrawBtn" class="red" type="button">Withdraw</button>
   </div>
-
 </header>
 
 <div class="layout">
-
 <aside class="sidebar" id="sidebar">
-
-  <button
-    class="navbtn active"
-    data-page="dashboard"
-    type="button">
-    🏠 Dashboard
-  </button>
-
-  <button
-    class="navbtn"
-    data-page="trades"
-    type="button">
-    📋 Trade History
-  </button>
-
-  <button
-    class="navbtn"
-    data-page="ledger"
-    type="button">
-    📒 Ledger
-  </button>
-
-  <button
-    class="navbtn"
-    id="addTradeSide"
-    type="button">
-    ➕ Add Trade
-  </button>
-
+  <button class="navbtn active" data-page="dashboard" type="button">🏠 Dashboard</button>
+  <button class="navbtn" data-page="trades" type="button">📋 Trade History</button>
+  <button class="navbtn" data-page="ledger" type="button">📒 Ledger</button>
+  <button class="navbtn" id="addTradeSide" type="button">➕ Add Trade</button>
 </aside>
 
 <main class="main">
-
 <section id="dashboard" class="page active">
-
   <h1>Dashboard</h1>
-
   <div class="cards">
-
-    <div class="card">
-      <div class="label">CURRENT BALANCE</div>
-      <div class="value" id="dashBalance">₹0.00</div>
-    </div>
-
-    <div class="card">
-      <div class="label">TOTAL TRADES</div>
-      <div class="value" id="dashTrades">0</div>
-    </div>
-
-    <div class="card">
-      <div class="label">WIN RATE</div>
-      <div class="value" id="dashWin">0%</div>
-    </div>
-
-    <div class="card">
-      <div class="label">TRADING P&L</div>
-      <div class="value" id="dashPnl">₹0.00</div>
-    </div>
-
+    <div class="card"><div class="label">CURRENT BALANCE</div><div class="value" id="dashBalance">₹0.00</div></div>
+    <div class="card"><div class="label">TOTAL TRADES</div><div class="value" id="dashTrades">0</div></div>
+    <div class="card"><div class="label">WIN RATE</div><div class="value" id="dashWin">0%</div></div>
+    <div class="card"><div class="label">TRADING P&L</div><div class="value" id="dashPnl">₹0.00</div></div>
   </div>
-
   <div class="card">
-
-    <h3 style="margin-top:0">
-      Recent Trades
-    </h3>
-
+    <h3 style="margin-top:0">Recent Trades</h3>
     <div id="recentTrades"></div>
-
   </div>
-
 </section>
 
 <section id="trades" class="page">
-
   <h1>Trade History</h1>
-
   <div class="toolbar">
-
-    <input
-      id="tradeSearch"
-      placeholder="Search strategy / symbol"
-    >
-
-    <select id="strategyFilter">
-      <option value="">All Strategies</option>
-    </select>
-
-    <select id="resultFilter">
-      <option value="">All Results</option>
-      <option>Win</option>
-      <option>Loss</option>
-      <option>BE</option>
-    </select>
-
-    <button
-      class="primary"
-      id="addTradeTop"
-      type="button">
-      ＋ Add Trade
-    </button>
-
+    <input id="tradeSearch" placeholder="Search strategy / symbol">
+    <select id="strategyFilter"><option value="">All Strategies</option></select>
+    <select id="resultFilter"><option value="">All Results</option><option>Win</option><option>Loss</option><option>BE</option></select>
+    <button class="primary" id="addTradeTop" type="button">＋ Add Trade</button>
   </div>
-
-  <div class="tablewrap">
-
-    <table>
-
-      <thead>
-        <tr>
-          <th>Date</th>
-          <th>Time</th>
-          <th>Symbol</th>
-          <th>Strategy</th>
-          <th>Buy/Sell</th>
-          <th>Entry</th>
-          <th>SL</th>
-          <th>TP</th>
-          <th>R:R</th>
-          <th>Risk %</th>
-          <th>Result</th>
-          <th>P&L</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-
-      <tbody id="tradeBody"></tbody>
-
-    </table>
-
-  </div>
-
+  <div class="tablewrap"><table>
+    <thead><tr><th>Date</th><th>Time</th><th>Symbol</th><th>Strategy</th><th>Buy/Sell</th><th>Entry</th><th>SL</th><th>TP</th><th>R:R</th><th>Risk %</th><th>Result</th><th>P&L</th><th>Actions</th></tr></thead>
+    <tbody id="tradeBody"></tbody>
+  </table></div>
 </section>
 
 <section id="ledger" class="page">
-
   <h1>Ledger</h1>
-
   <div class="ledger-summary">
-
-    <div class="card">
-      <div class="label">STARTING</div>
-      <div class="value" id="ledStart">₹0</div>
-    </div>
-
-    <div class="card">
-      <div class="label">DEPOSITS</div>
-      <div class="value" id="ledDep">₹0</div>
-    </div>
-
-    <div class="card">
-      <div class="label">WITHDRAWALS</div>
-      <div class="value" id="ledWith">₹0</div>
-    </div>
-
-    <div class="card">
-      <div class="label">TRADING P&L</div>
-      <div class="value" id="ledPnl">₹0</div>
-    </div>
-
+    <div class="card"><div class="label">STARTING</div><div class="value" id="ledStart">₹0</div></div>
+    <div class="card"><div class="label">DEPOSITS</div><div class="value" id="ledDep">₹0</div></div>
+    <div class="card"><div class="label">WITHDRAWALS</div><div class="value" id="ledWith">₹0</div></div>
+    <div class="card"><div class="label">TRADING P&L</div><div class="value" id="ledPnl">₹0</div></div>
   </div>
-
   <div class="toolbar">
-
-    <button
-      class="green primary"
-      id="ledgerDeposit"
-      type="button">
-      ＋ Deposit
-    </button>
-
-    <button
-      class="red primary"
-      id="ledgerWithdraw"
-      type="button">
-      − Withdrawal
-    </button>
-
-    <button
-      class="secondary"
-      id="ledgerBack"
-      type="button">
-      ← Dashboard
-    </button>
-
+    <button class="green primary" id="ledgerDeposit" type="button">＋ Deposit</button>
+    <button class="red primary" id="ledgerWithdraw" type="button">− Withdrawal</button>
+    <button class="secondary" id="ledgerBack" type="button">← Dashboard</button>
   </div>
-
-  <div class="tablewrap">
-
-    <table>
-
-      <thead>
-        <tr>
-          <th>Date</th>
-          <th>Type</th>
-          <th>Amount</th>
-          <th>Note</th>
-          <th>Running Balance</th>
-          <th>Action</th>
-        </tr>
-      </thead>
-
-      <tbody id="ledgerBody"></tbody>
-
-    </table>
-
-  </div>
-
-  <div class="note">
-    Running balance = starting balance + deposits + trading P&L − withdrawals.
-  </div>
-
+  <div class="tablewrap"><table>
+    <thead><tr><th>Date</th><th>Type</th><th>Amount</th><th>Note</th><th>Running Balance</th><th>Action</th></tr></thead>
+    <tbody id="ledgerBody"></tbody>
+  </table></div>
+  <div class="note">Running balance = starting balance + deposits + trading P&L − withdrawals.</div>
 </section>
-
 </main>
 </div>
 </div>
 
 <div class="modal" id="tradeModal">
-
-  <div class="modalbox">
-
-    <div class="modalhead">
-
-      <h2 id="tradeModalTitle">
-        Add Trade
-      </h2>
-
-      <button
-        class="x"
-        data-close="tradeModal"
-        type="button">
-        ✕
-      </button>
-
-    </div>
-
-    <form id="tradeForm" class="form">
-
-      <input type="hidden" id="tradeId">
-
-      <div class="formgrid">
-
-        <div>
-          <label>Date</label>
-          <input id="fDate" type="date" required>
-        </div>
-
-        <div>
-          <label>Time</label>
-          <input id="fTime" type="time" required>
-        </div>
-
-        <div>
-          <label>Symbol</label>
-          <input id="fSymbol" value="XAUUSD" required>
-        </div>
-
-        <div>
-          <label>Strategy</label>
-          <input
-            id="fStrategy"
-            placeholder="e.g. BB No Touch"
-            required>
-        </div>
-
-        <div>
-          <label>My Strategy / TF</label>
-          <input
-            id="fMyStrategy"
-            placeholder="e.g. 4M">
-        </div>
-
-        <div>
-          <label>Side</label>
-
-          <select id="fSide">
-            <option>Buy</option>
-            <option>Sell</option>
-          </select>
-
-        </div>
-
-        <div>
-          <label>Entry</label>
-          <input
-            id="fEntry"
-            type="number"
-            step="any"
-            required>
-        </div>
-
-        <div>
-          <label>SL</label>
-          <input
-            id="fSL"
-            type="number"
-            step="any"
-            required>
-        </div>
-
-        <div>
-          <label>TP</label>
-          <input
-            id="fTP"
-            type="number"
-            step="any"
-            required>
-        </div>
-
-        <div>
-          <label>Risk %</label>
-          <input
-            id="fRisk"
-            type="number"
-            step="any"
-            value="1">
-        </div>
-
-        <div>
-          <label>Result</label>
-
-          <select id="fResult">
-            <option>Win</option>
-            <option>Loss</option>
-            <option>BE</option>
-          </select>
-
-        </div>
-
-        <div>
-          <label>P&L</label>
-          <input
-            id="fPnl"
-            type="number"
-            step="any"
-            value="0">
-        </div>
-
-        <div class="full">
-          <label>Notes</label>
-          <textarea
-            id="fNotes"
-            rows="3"></textarea>
-        </div>
-
-      </div>
-
-      <div class="actions">
-
-        <button
-          class="secondary"
-          data-close="tradeModal"
-          type="button">
-          Cancel
-        </button>
-
-        <button
-          class="primary"
-          type="submit">
-          Save Trade
-        </button>
-
-      </div>
-
-    </form>
-
-  </div>
-
+ <div class="modalbox">
+  <div class="modalhead"><h2 id="tradeModalTitle">Add Trade</h2><button class="x" data-close="tradeModal" type="button">✕</button></div>
+  <form id="tradeForm" class="form">
+   <input type="hidden" id="tradeId">
+   <div class="formgrid">
+    <div><label>Date</label><input id="fDate" type="date" required></div>
+    <div><label>Time</label><input id="fTime" type="time" required></div>
+    <div><label>Symbol</label><input id="fSymbol" value="XAUUSD" required></div>
+    <div><label>Strategy</label><input id="fStrategy" placeholder="e.g. BB No Touch" required></div>
+    <div><label>My Strategy / TF</label><input id="fMyStrategy" placeholder="e.g. 4M"></div>
+    <div><label>Side</label><select id="fSide"><option>Buy</option><option>Sell</option></select></div>
+    <div><label>Entry</label><input id="fEntry" type="number" step="any" required></div>
+    <div><label>SL</label><input id="fSL" type="number" step="any" required></div>
+    <div><label>TP</label><input id="fTP" type="number" step="any" required></div>
+    <div><label>Risk %</label><input id="fRisk" type="number" step="any" value="1"></div>
+    <div><label>Result</label><select id="fResult"><option>Win</option><option>Loss</option><option>BE</option></select></div>
+    <div><label>P&L</label><input id="fPnl" type="number" step="any" value="0"></div>
+    <div class="full"><label>Notes</label><textarea id="fNotes" rows="3"></textarea></div>
+   </div>
+   <div class="actions"><button class="secondary" data-close="tradeModal" type="button">Cancel</button><button class="primary" type="submit">Save Trade</button></div>
+  </form>
+ </div>
 </div>
 
 <div class="modal" id="accountModal">
-
-  <div class="modalbox">
-
-    <div class="modalhead">
-
-      <h2>Account</h2>
-
-      <button
-        class="x"
-        data-close="accountModal"
-        type="button">
-        ✕
-      </button>
-
-    </div>
-
-    <form id="accountForm" class="form">
-
-      <label>
-        Starting / Account Balance
-      </label>
-
-      <input
-        id="startingBalance"
-        type="number"
-        step="any"
-        min="0">
-
-      <div class="note">
-        Current balance automatically includes deposits,
-        withdrawals and trading P&L.
-      </div>
-
-      <div class="actions">
-
-        <button
-          class="secondary"
-          data-close="accountModal"
-          type="button">
-          Cancel
-        </button>
-
-        <button
-          class="primary"
-          type="submit">
-          Save
-        </button>
-
-      </div>
-
-    </form>
-
-  </div>
-
+ <div class="modalbox">
+  <div class="modalhead"><h2>Account</h2><button class="x" data-close="accountModal" type="button">✕</button></div>
+  <form id="accountForm" class="form">
+   <label>Starting / Account Balance</label><input id="startingBalance" type="number" step="any" min="0">
+   <div class="note">Current balance automatically includes deposits, withdrawals and trading P&L.</div>
+   <div class="actions"><button class="secondary" data-close="accountModal" type="button">Cancel</button><button class="primary" type="submit">Save</button></div>
+  </form>
+ </div>
 </div>
 
 <div class="modal" id="ledgerModal">
-
-  <div class="modalbox">
-
-    <div class="modalhead">
-
-      <h2 id="ledgerTitle">
-        Ledger Entry
-      </h2>
-
-      <button
-        class="x"
-        data-close="ledgerModal"
-        type="button">
-        ✕
-      </button>
-
-    </div>
-
-    <form id="ledgerForm" class="form">
-
-      <input type="hidden" id="ledgerType">
-
-      <div class="formgrid">
-
-        <div>
-          <label>Date</label>
-          <input
-            id="ledgerDate"
-            type="date"
-            required>
-        </div>
-
-        <div>
-          <label>Amount</label>
-          <input
-            id="ledgerAmount"
-            type="number"
-            step="any"
-            min="0"
-            required>
-        </div>
-
-        <div class="full">
-          <label>Note</label>
-          <input
-            id="ledgerNote"
-            placeholder="Optional">
-        </div>
-
-      </div>
-
-      <div class="actions">
-
-        <button
-          class="secondary"
-          data-close="ledgerModal"
-          type="button">
-          Cancel
-        </button>
-
-        <button
-          class="primary"
-          type="submit">
-          Save Entry
-        </button>
-
-      </div>
-
-    </form>
-
-  </div>
-
+ <div class="modalbox">
+  <div class="modalhead"><h2 id="ledgerTitle">Ledger Entry</h2><button class="x" data-close="ledgerModal" type="button">✕</button></div>
+  <form id="ledgerForm" class="form">
+   <input type="hidden" id="ledgerType">
+   <div class="formgrid">
+    <div><label>Date</label><input id="ledgerDate" type="date" required></div>
+    <div><label>Amount</label><input id="ledgerAmount" type="number" step="any" min="0" required></div>
+    <div class="full"><label>Note</label><input id="ledgerNote" placeholder="Optional"></div>
+   </div>
+   <div class="actions"><button class="secondary" data-close="ledgerModal" type="button">Cancel</button><button class="primary" type="submit">Save Entry</button></div>
+  </form>
+ </div>
 </div>
 
 <script>
@@ -986,73 +191,179 @@ th{
 'use strict';
 
 const KEYS={
-  trades:'tradingJournalTradesV1',
-  account:'tradingJournalAccountV1',
-  deposits:'tradingJournalDepositsV1',
-  withdrawals:'tradingJournalWithdrawalsV1'
+ trades:'tradingJournalTradesV1',
+ account:'tradingJournalAccountV1',
+ deposits:'tradingJournalDepositsV1',
+ withdrawals:'tradingJournalWithdrawalsV1'
 };
 
 const $=id=>document.getElementById(id);
-
+const read=(key, fallback)=>{try{const v=localStorage.getItem(key);return v===null?fallback:JSON.parse(v)}catch(e){return fallback}};
+const write=(key,val)=>localStorage.setItem(key,JSON.stringify(val));
 const today=()=>new Date().toISOString().slice(0,10);
+const money=n=>'₹'+Number(n||0).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2});
 
-const money=n=>'₹'+Number(n||0).toLocaleString('en-IN',{
-  minimumFractionDigits:2,
-  maximumFractionDigits:2
-});
+let trades=read(KEYS.trades,[]);
+let account=read(KEYS.account,{starting:0});
+let deposits=read(KEYS.deposits,[]);
+let withdrawals=read(KEYS.withdrawals,[]);
 
-const esc=v=>String(v??'').replace(
-  /[&<>"']/g,
-  m=>({
-    '&':'&amp;',
-    '<':'&lt;',
-    '>':'&gt;',
-    '"':'&quot;',
-    "'":'&#039;'
-  }[m])
-);
+function pnlTotal(){return trades.reduce((s,t)=>s+Number(t.pnl||0),0)}
+function depTotal(){return deposits.reduce((s,x)=>s+Number(x.amount||0),0)}
+function withTotal(){return withdrawals.reduce((s,x)=>s+Number(x.amount||0),0)}
+function balance(){return Number(account.starting||0)+depTotal()+pnlTotal()-withTotal()}
 
-let sb=null;
-let user=null;
+function open(id){$(id).classList.add('show')}
+function close(id){$(id).classList.remove('show')}
 
-let trades=[];
-let account={starting:0};
-let deposits=[];
-let withdrawals=[];
-
-function saveLocal(){
-
-  localStorage.setItem(
-    KEYS.trades,
-    JSON.stringify(trades)
-  );
-
-  localStorage.setItem(
-    KEYS.account,
-    JSON.stringify(account)
-  );
-
-  localStorage.setItem(
-    KEYS.deposits,
-    JSON.stringify(deposits)
-  );
-
-  localStorage.setItem(
-    KEYS.withdrawals,
-    JSON.stringify(withdrawals)
-  );
+function showPage(name){
+ document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+ $(name).classList.add('active');
+ document.querySelectorAll('.navbtn').forEach(b=>b.classList.toggle('active',b.dataset.page===name));
+ $('sidebar').classList.remove('open');
+ $('menuBtn').textContent='☰';
+ if(name==='dashboard')renderDashboard();
+ if(name==='trades')renderTrades();
+ if(name==='ledger')renderLedger();
 }
 
-function loadLocal(){
+function calcRR(t){
+ const e=Number(t.entry),sl=Number(t.sl),tp=Number(t.tp);
+ const risk=Math.abs(e-sl), reward=Math.abs(tp-e);
+ return risk?reward/risk:0;
+}
 
-  try{
-    trades=JSON.parse(
-      localStorage.getItem(KEYS.trades)||'[]'
-    );
-  }catch{
-    trades=[];
-  }
+function renderDashboard(){
+ $('dashBalance').textContent=money(balance());
+ $('dashTrades').textContent=trades.length;
+ const wins=trades.filter(t=>t.result==='Win').length;
+ $('dashWin').textContent=(trades.length?Math.round(wins/trades.length*100):0)+'%';
+ $('dashPnl').textContent=money(pnlTotal());
+ const rows=[...trades].sort((a,b)=>(b.date+b.time).localeCompare(a.date+a.time)).slice(0,5);
+ $('recentTrades').innerHTML=rows.length?'<div class="tablewrap"><table><thead><tr><th>Date</th><th>Symbol</th><th>Strategy</th><th>Side</th><th>Result</th><th>P&L</th></tr></thead><tbody>'+
+ rows.map(t=>`<tr><td>${t.date} ${t.time}</td><td>${esc(t.symbol)}</td><td>${esc(t.strategy)}</td><td>${t.side}</td><td class="${t.result==='Win'?'win':t.result==='Loss'?'loss':''}">${t.result}</td><td>${money(t.pnl)}</td></tr>`).join('')+
+ '</tbody></table></div>':'<div class="empty">No trades yet.</div>';
+}
 
-  try{
-    account=JSON.parse(
-     
+function renderTrades(){
+ const q=$('tradeSearch').value.toLowerCase().trim();
+ const sf=$('strategyFilter').value, rf=$('resultFilter').value;
+ const strategies=[...new Set(trades.map(t=>t.strategy).filter(Boolean))].sort();
+ const current=sf;
+ $('strategyFilter').innerHTML='<option value="">All Strategies</option>'+strategies.map(s=>`<option>${esc(s)}</option>`).join('');
+ $('strategyFilter').value=current;
+ const list=trades.filter(t=>{
+   const text=(t.symbol+' '+t.strategy+' '+(t.myStrategy||'')).toLowerCase();
+   return (!q||text.includes(q))&&(!sf||t.strategy===sf)&&(!rf||t.result===rf);
+ }).sort((a,b)=>(b.date+b.time).localeCompare(a.date+a.time));
+ $('tradeBody').innerHTML=list.length?list.map(t=>`<tr>
+ <td>${t.date}</td><td>${t.time}</td><td>${esc(t.symbol)}</td><td>${esc(t.strategy)}${t.myStrategy?' · '+esc(t.myStrategy):''}</td>
+ <td>${t.side}</td><td>${t.entry}</td><td>${t.sl}</td><td>${t.tp}</td><td>1:${calcRR(t).toFixed(2)}</td><td>${t.risk}%</td>
+ <td class="${t.result==='Win'?'win':t.result==='Loss'?'loss':''}">${t.result}</td><td class="${Number(t.pnl)>=0?'win':'loss'}">${money(t.pnl)}</td>
+ <td><button class="secondary editTrade" data-id="${t.id}" type="button">Edit</button> <button class="secondary deleteTrade" data-id="${t.id}" type="button">Delete</button></td>
+ </tr>`).join(''):'<tr><td colspan="13" class="empty">No trades found.</td></tr>';
+}
+
+function renderLedger(){
+ $('ledStart').textContent=money(account.starting);
+ $('ledDep').textContent=money(depTotal());
+ $('ledWith').textContent=money(withTotal());
+ $('ledPnl').textContent=money(pnlTotal());
+
+ const events=[];
+ deposits.forEach(x=>events.push({date:x.date,type:'Deposit',amount:Number(x.amount),note:x.note||'',id:x.id,sign:1}));
+ withdrawals.forEach(x=>events.push({date:x.date,type:'Withdrawal',amount:Number(x.amount),note:x.note||'',id:x.id,sign:-1}));
+ trades.forEach(t=>events.push({date:t.date,type:'Trading P&L',amount:Number(t.pnl||0),note:(t.symbol||'')+' '+(t.strategy||''),id:t.id,sign:Number(t.pnl||0)>=0?1:-1,trade:true}));
+ events.sort((a,b)=>a.date.localeCompare(b.date)||String(a.id).localeCompare(String(b.id)));
+ let run=Number(account.starting||0);
+ $('ledgerBody').innerHTML=events.length?events.map(x=>{
+   run+=x.sign*x.amount;
+   const val=x.trade?Number(x.amount):x.sign*x.amount;
+   const action=x.trade?'—':`<button class="secondary deleteLedger" data-type="${x.type}" data-id="${x.id}" type="button">Delete</button>`;
+   return `<tr><td>${x.date}</td><td>${x.type}</td><td class="${val>=0?'win':'loss'}">${money(val)}</td><td>${esc(x.note)}</td><td>${money(run)}</td><td>${action}</td></tr>`;
+ }).join(''):'<tr><td colspan="6" class="empty">No ledger entries yet.</td></tr>';
+}
+
+function openTrade(id){
+ $('tradeForm').reset();
+ $('tradeId').value=id||'';
+ $('fDate').value=today(); $('fTime').value=new Date().toTimeString().slice(0,5);
+ $('fSymbol').value='XAUUSD'; $('fRisk').value='1'; $('fPnl').value='0'; $('fSide').value='Buy'; $('fResult').value='Win';
+ $('tradeModalTitle').textContent=id?'Edit Trade':'Add Trade';
+ if(id){
+   const t=trades.find(x=>String(x.id)===String(id)); if(!t)return;
+   $('fDate').value=t.date;$('fTime').value=t.time;$('fSymbol').value=t.symbol;$('fStrategy').value=t.strategy;
+   $('fMyStrategy').value=t.myStrategy||'';$('fSide').value=t.side;$('fEntry').value=t.entry;$('fSL').value=t.sl;$('fTP').value=t.tp;
+   $('fRisk').value=t.risk;$('fResult').value=t.result;$('fPnl').value=t.pnl;$('fNotes').value=t.notes||'';
+ }
+ open('tradeModal');
+}
+
+function esc(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
+
+document.addEventListener('click',function(e){
+ const nav=e.target.closest('.navbtn[data-page]');
+ if(nav){showPage(nav.dataset.page);return}
+ if(e.target.closest('#menuBtn')){
+   $('sidebar').classList.toggle('open');$('menuBtn').textContent=$('sidebar').classList.contains('open')?'✕':'☰';return;
+ }
+ if(e.target.closest('#addTradeSide,#addTradeTop')){openTrade();return}
+ const edit=e.target.closest('.editTrade');if(edit){openTrade(edit.dataset.id);return}
+ const del=e.target.closest('.deleteTrade');if(del){
+   if(confirm('Delete this trade?')){trades=trades.filter(t=>String(t.id)!==String(del.dataset.id));write(KEYS.trades,trades);renderTrades();renderDashboard();renderLedger()}return;
+ }
+ const dl=e.target.closest('.deleteLedger');if(dl){
+   if(confirm('Delete this ledger entry?')){
+    const id=String(dl.dataset.id);
+    if(dl.dataset.type==='Deposit')deposits=deposits.filter(x=>String(x.id)!==id);
+    if(dl.dataset.type==='Withdrawal')withdrawals=withdrawals.filter(x=>String(x.id)!==id);
+    write(KEYS.deposits,deposits);write(KEYS.withdrawals,withdrawals);renderLedger();renderDashboard();
+   }return;
+ }
+ if(e.target.closest('#accountBtn')){$('startingBalance').value=account.starting||0;open('accountModal');return}
+ if(e.target.closest('#depositBtn,#ledgerDeposit')){openLedgerEntry('Deposit');return}
+ if(e.target.closest('#withdrawBtn,#ledgerWithdraw')){openLedgerEntry('Withdrawal');return}
+ if(e.target.closest('#ledgerBack')){showPage('dashboard');return}
+ const c=e.target.closest('[data-close]');if(c){close(c.dataset.close);return}
+});
+
+function openLedgerEntry(type){
+ $('ledgerForm').reset();$('ledgerType').value=type;$('ledgerDate').value=today();$('ledgerTitle').textContent=type;open('ledgerModal');
+}
+
+$('tradeForm').addEventListener('submit',function(e){
+ e.preventDefault();
+ const id=$('tradeId').value||String(Date.now());
+ const obj={id,date:$('fDate').value,time:$('fTime').value,symbol:$('fSymbol').value.trim(),strategy:$('fStrategy').value.trim(),
+ myStrategy:$('fMyStrategy').value.trim(),side:$('fSide').value,entry:Number($('fEntry').value),sl:Number($('fSL').value),tp:Number($('fTP').value),
+ risk:Number($('fRisk').value||0),result:$('fResult').value,pnl:Number($('fPnl').value||0),notes:$('fNotes').value.trim()};
+ const i=trades.findIndex(t=>String(t.id)===String(id));if(i>=0)trades[i]=obj;else trades.push(obj);
+ write(KEYS.trades,trades);close('tradeModal');renderTrades();renderDashboard();renderLedger();
+});
+
+$('accountForm').addEventListener('submit',function(e){e.preventDefault();account={starting:Number($('startingBalance').value||0)};write(KEYS.account,account);close('accountModal');renderDashboard();renderLedger()});
+
+$('ledgerForm').addEventListener('submit',function(e){
+ e.preventDefault();
+ const type=$('ledgerType').value, item={id:String(Date.now()),date:$('ledgerDate').value,amount:Number($('ledgerAmount').value||0),note:$('ledgerNote').value.trim()};
+ if(type==='Deposit')deposits.push(item);else withdrawals.push(item);
+ write(KEYS.deposits,deposits);write(KEYS.withdrawals,withdrawals);close('ledgerModal');renderDashboard();renderLedger();
+});
+
+['tradeSearch','strategyFilter','resultFilter'].forEach(id=>$(id).addEventListener('input',renderTrades));
+
+document.querySelectorAll('.modal').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)close(m.id)}));
+
+renderDashboard();renderTrades();renderLedger();
+
+})();
+</script>
+<script>
+if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+  window.addEventListener('load', function () {
+    navigator.serviceWorker.register('./sw.js').catch(function(){});
+  });
+}
+</script>
+</body>
+</html>
