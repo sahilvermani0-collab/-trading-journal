@@ -1,20 +1,20 @@
-TRADING JOURNAL — CLOUD SYNC SETUP
+TRADING JOURNAL — DIRECT APP PACKAGE
 
-What this package does:
-- Same journal data on iPhone + PC
-- Email/password sign-in
-- Trades, account, deposits and withdrawals stored in Supabase
-- Row Level Security so each signed-in user can access only their own rows
+This package is the cloud-synced Trading Journal configured for the existing Supabase project.
 
-1. Create a Supabase project.
-2. Open SQL Editor and run schema.sql.
-3. In Supabase Auth, enable Email/Password.
-4. Get Project URL and Publishable/anon key from the project API/Connect settings.
-5. Upload index.html to your GitHub Pages repository, replacing the old index.html.
-6. Open the website. Enter Project URL + Publishable/anon key.
-7. Sign in/create the journal account.
-8. Use the same login on PC and iPhone.
+For a simple public link without GitHub:
+1. Open Netlify Drop: https://app.netlify.com/drop
+2. Unzip this package first.
+3. Upload the extracted Trading_Journal_Direct_App folder.
+4. Netlify gives you a live netlify.app URL to share.
 
-SECURITY:
-- Only use the browser-safe Publishable/anon key.
-- NEVER put a service_role/secret key in index.html or send it to anyone.
+IMPORTANT FOR LOGIN REDIRECT:
+Add your new Netlify URL in Supabase:
+Authentication -> URL Configuration -> Redirect URLs
+Example:
+https://YOUR-SITE.netlify.app/**
+
+The app already contains the Supabase Project URL and browser-safe publishable key.
+Never put a Supabase secret/service_role key in this app.
+
+Each person creates their own journal login. Their data is separated by their Supabase user account and can sync across their phone/PC when they use the same login.
