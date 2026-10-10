@@ -5,10 +5,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<title>Trading Journal</title>
-<link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#111827">
-<link rel="apple-touch-icon" href="icon-192.png">
+<title>Trading Journal — Cloud Sync</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *{box-sizing:border-box}
 html,body{margin:0;padding:0;background:#f5f7fb;color:#172033;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif}
@@ -61,13 +59,31 @@ th{background:#f8fafc;color:#475569;font-size:12px}
  .toolbar>*{flex:1;min-width:130px}.toolbar input,.toolbar select{width:100%}
  h1{font-size:21px}
 }
-</style>
+
+.cloud-gate{position:fixed;inset:0;background:#f5f7fb;z-index:9999;display:flex;align-items:center;justify-content:center;padding:18px}
+.cloud-box{width:min(520px,100%);background:#fff;border:1px solid #e5e7eb;border-radius:18px;padding:22px;box-shadow:0 15px 45px rgba(15,23,42,.12)}
+.cloud-box h2{margin:0 0 8px}.cloud-box p{color:#64748b;font-size:13px;line-height:1.5}.cloud-box input{width:100%;padding:12px;border:1px solid #d7dce5;border-radius:10px;margin:6px 0 10px}.cloud-box button{border:0;border-radius:10px;padding:12px 15px;background:#2563eb;color:#fff;font-weight:800}.cloud-status{font-size:12px;margin-top:10px;color:#64748b}.sync-pill{font-size:11px;background:#e8f5ee;color:#047857;border-radius:999px;padding:5px 8px;font-weight:800}
+
 </head>
 <body>
+
+<div class="cloud-gate" id="cloudGate">
+  <div class="cloud-box">
+    <h2>☁️ Trading Journal Cloud Sync</h2>
+    <p>Phone aur PC par same data ke liye Supabase connect karo. Sirf <b>Project URL</b> aur <b>Publishable/anon key</b> use karo. <b>Service-role/secret key kabhi mat daalna.</b></p>
+    <label><b>Supabase Project URL</b></label>
+    <input id="sbUrl" placeholder="https://xxxxx.supabase.co" autocomplete="off">
+    <label><b>Supabase Publishable / anon Key</b></label>
+    <input id="sbKey" placeholder="sb_publishable_... or anon key" autocomplete="off">
+    <button id="connectCloud" type="button">Connect Cloud</button>
+    <div class="cloud-status" id="cloudStatus">Cloud connection required for cross-device sync.</div>
+  </div>
+</div>
+
 <div class="app">
 <header class="topbar">
   <button class="menu" id="menuBtn" type="button">☰</button>
-  <div class="brand">📊 Trading Journal</div>
+  <div class="brand">📊 Trading Journal <span class="sync-pill" id="syncPill">Cloud</span></div>
   <div class="top-actions">
     <button id="accountBtn" type="button">Account</button>
     <button id="depositBtn" class="green" type="button">Deposit</button>
@@ -190,136 +206,142 @@ th{background:#f8fafc;color:#475569;font-size:12px}
 (function(){
 'use strict';
 
-const KEYS={
- trades:'tradingJournalTradesV1',
- account:'tradingJournalAccountV1',
- deposits:'tradingJournalDepositsV1',
- withdrawals:'tradingJournalWithdrawalsV1'
-};
-
+const KEYS={trades:'tradingJournalTradesV1',account:'tradingJournalAccountV1',deposits:'tradingJournalDepositsV1',withdrawals:'tradingJournalWithdrawalsV1'};
 const $=id=>document.getElementById(id);
-const read=(key, fallback)=>{try{const v=localStorage.getItem(key);return v===null?fallback:JSON.parse(v)}catch(e){return fallback}};
-const write=(key,val)=>localStorage.setItem(key,JSON.stringify(val));
 const today=()=>new Date().toISOString().slice(0,10);
 const money=n=>'₹'+Number(n||0).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2});
+const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+let sb=null, user=null;
+let trades=[], account={starting:0}, deposits=[], withdrawals=[];
 
-let trades=read(KEYS.trades,[]);
-let account=read(KEYS.account,{starting:0});
-let deposits=read(KEYS.deposits,[]);
-let withdrawals=read(KEYS.withdrawals,[]);
-
+function saveLocal(){
+  localStorage.setItem(KEYS.trades,JSON.stringify(trades));
+  localStorage.setItem(KEYS.account,JSON.stringify(account));
+  localStorage.setItem(KEYS.deposits,JSON.stringify(deposits));
+  localStorage.setItem(KEYS.withdrawals,JSON.stringify(withdrawals));
+}
+function loadLocal(){
+  try{trades=JSON.parse(localStorage.getItem(KEYS.trades)||'[]')}catch{trades=[]}
+  try{account=JSON.parse(localStorage.getItem(KEYS.account)||'{"starting":0}')}catch{account={starting:0}}
+  try{deposits=JSON.parse(localStorage.getItem(KEYS.deposits)||'[]')}catch{deposits=[]}
+  try{withdrawals=JSON.parse(localStorage.getItem(KEYS.withdrawals)||'[]')}catch{withdrawals=[]}
+}
 function pnlTotal(){return trades.reduce((s,t)=>s+Number(t.pnl||0),0)}
 function depTotal(){return deposits.reduce((s,x)=>s+Number(x.amount||0),0)}
 function withTotal(){return withdrawals.reduce((s,x)=>s+Number(x.amount||0),0)}
 function balance(){return Number(account.starting||0)+depTotal()+pnlTotal()-withTotal()}
-
 function open(id){$(id).classList.add('show')}
 function close(id){$(id).classList.remove('show')}
+
+async function connect(){
+  const url=$('sbUrl').value.trim(), key=$('sbKey').value.trim();
+  if(!url||!key){$('cloudStatus').textContent='Project URL aur key dono required hain.';return}
+  try{
+    sb=window.supabase.createClient(url,key);
+    localStorage.setItem('tj_sb_url',url);localStorage.setItem('tj_sb_key',key);
+    $('cloudStatus').textContent='Connecting...';
+    const {data,error}=await sb.auth.getSession();
+    if(error) throw error;
+    if(data.session){
+      user=data.session.user; await loadCloud(); unlock();
+    }else{
+      const email=prompt('Supabase account email enter karo:');
+      if(!email)return;
+      const password=prompt('Supabase account password enter karo:');
+      if(!password)return;
+      let r=await sb.auth.signInWithPassword({email,password});
+      if(r.error){
+        const create=confirm('Login nahi hua. Kya isi email se new account create karna hai?');
+        if(!create)return;
+        r=await sb.auth.signUp({email,password});
+        if(r.error)throw r.error;
+        if(!r.data.session){$('cloudStatus').textContent='Email confirmation required. Supabase Auth settings check karo.';return}
+      }
+      user=r.data.user; await loadCloud(); unlock();
+    }
+  }catch(e){$('cloudStatus').textContent='Connection error: '+(e.message||e)}
+}
+function unlock(){
+ $('cloudGate').style.display='none';
+ $('syncPill').textContent='☁ Synced';
+ renderDashboard();renderTrades();renderLedger();
+ if(sb) sb.auth.onAuthStateChange(()=>{});
+}
+async function loadCloud(){
+ const {data,error}=await sb.from('journal_data').select('*').eq('user_id',user.id);
+ if(error) throw error;
+ if(!data||!data.length){loadLocal(); await pushAll(); return}
+ trades=data.filter(x=>x.kind==='trade').map(x=>x.payload);
+ const a=data.find(x=>x.kind==='account'); account=a?.payload||{starting:0};
+ deposits=data.filter(x=>x.kind==='deposit').map(x=>x.payload);
+ withdrawals=data.filter(x=>x.kind==='withdrawal').map(x=>x.payload);
+ saveLocal();
+}
+async function pushAll(){
+ const rows=[
+  ...trades.map(payload=>({user_id:user.id,kind:'trade',item_id:String(payload.id),payload})),
+  {user_id:user.id,kind:'account',item_id:'account',payload:account},
+  ...deposits.map(payload=>({user_id:user.id,kind:'deposit',item_id:String(payload.id),payload})),
+  ...withdrawals.map(payload=>({user_id:user.id,kind:'withdrawal',item_id:String(payload.id),payload}))
+ ];
+ await sb.from('journal_data').delete().eq('user_id',user.id);
+ if(rows.length){const {error}=await sb.from('journal_data').insert(rows);if(error)throw error}
+ saveLocal();
+}
+async function syncOne(kind,payload){
+ const row={user_id:user.id,kind,item_id:kind==='account'?'account':String(payload.id),payload};
+ const {error}=await sb.from('journal_data').upsert(row,{onConflict:'user_id,kind,item_id'});
+ if(error)throw error;
+ saveLocal();
+}
+async function deleteOne(kind,id){
+ const {error}=await sb.from('journal_data').delete().eq('user_id',user.id).eq('kind',kind).eq('item_id',String(id));
+ if(error)throw error;
+ saveLocal();
+}
 
 function showPage(name){
  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
  $(name).classList.add('active');
  document.querySelectorAll('.navbtn').forEach(b=>b.classList.toggle('active',b.dataset.page===name));
- $('sidebar').classList.remove('open');
- $('menuBtn').textContent='☰';
- if(name==='dashboard')renderDashboard();
- if(name==='trades')renderTrades();
- if(name==='ledger')renderLedger();
+ $('sidebar').classList.remove('open');$('menuBtn').textContent='☰';
+ if(name==='dashboard')renderDashboard();if(name==='trades')renderTrades();if(name==='ledger')renderLedger();
 }
-
-function calcRR(t){
- const e=Number(t.entry),sl=Number(t.sl),tp=Number(t.tp);
- const risk=Math.abs(e-sl), reward=Math.abs(tp-e);
- return risk?reward/risk:0;
-}
-
+function calcRR(t){const risk=Math.abs(Number(t.entry)-Number(t.sl)),reward=Math.abs(Number(t.tp)-Number(t.entry));return risk?reward/risk:0}
 function renderDashboard(){
- $('dashBalance').textContent=money(balance());
- $('dashTrades').textContent=trades.length;
- const wins=trades.filter(t=>t.result==='Win').length;
- $('dashWin').textContent=(trades.length?Math.round(wins/trades.length*100):0)+'%';
- $('dashPnl').textContent=money(pnlTotal());
+ $('dashBalance').textContent=money(balance());$('dashTrades').textContent=trades.length;
+ const wins=trades.filter(t=>t.result==='Win').length;$('dashWin').textContent=(trades.length?Math.round(wins/trades.length*100):0)+'%';$('dashPnl').textContent=money(pnlTotal());
  const rows=[...trades].sort((a,b)=>(b.date+b.time).localeCompare(a.date+a.time)).slice(0,5);
  $('recentTrades').innerHTML=rows.length?'<div class="tablewrap"><table><thead><tr><th>Date</th><th>Symbol</th><th>Strategy</th><th>Side</th><th>Result</th><th>P&L</th></tr></thead><tbody>'+
  rows.map(t=>`<tr><td>${t.date} ${t.time}</td><td>${esc(t.symbol)}</td><td>${esc(t.strategy)}</td><td>${t.side}</td><td class="${t.result==='Win'?'win':t.result==='Loss'?'loss':''}">${t.result}</td><td>${money(t.pnl)}</td></tr>`).join('')+
  '</tbody></table></div>':'<div class="empty">No trades yet.</div>';
 }
-
 function renderTrades(){
- const q=$('tradeSearch').value.toLowerCase().trim();
- const sf=$('strategyFilter').value, rf=$('resultFilter').value;
- const strategies=[...new Set(trades.map(t=>t.strategy).filter(Boolean))].sort();
- const current=sf;
- $('strategyFilter').innerHTML='<option value="">All Strategies</option>'+strategies.map(s=>`<option>${esc(s)}</option>`).join('');
- $('strategyFilter').value=current;
- const list=trades.filter(t=>{
-   const text=(t.symbol+' '+t.strategy+' '+(t.myStrategy||'')).toLowerCase();
-   return (!q||text.includes(q))&&(!sf||t.strategy===sf)&&(!rf||t.result===rf);
- }).sort((a,b)=>(b.date+b.time).localeCompare(a.date+a.time));
- $('tradeBody').innerHTML=list.length?list.map(t=>`<tr>
- <td>${t.date}</td><td>${t.time}</td><td>${esc(t.symbol)}</td><td>${esc(t.strategy)}${t.myStrategy?' · '+esc(t.myStrategy):''}</td>
- <td>${t.side}</td><td>${t.entry}</td><td>${t.sl}</td><td>${t.tp}</td><td>1:${calcRR(t).toFixed(2)}</td><td>${t.risk}%</td>
- <td class="${t.result==='Win'?'win':t.result==='Loss'?'loss':''}">${t.result}</td><td class="${Number(t.pnl)>=0?'win':'loss'}">${money(t.pnl)}</td>
- <td><button class="secondary editTrade" data-id="${t.id}" type="button">Edit</button> <button class="secondary deleteTrade" data-id="${t.id}" type="button">Delete</button></td>
- </tr>`).join(''):'<tr><td colspan="13" class="empty">No trades found.</td></tr>';
+ const q=$('tradeSearch').value.toLowerCase().trim(),sf=$('strategyFilter').value,rf=$('resultFilter').value;
+ const strategies=[...new Set(trades.map(t=>t.strategy).filter(Boolean))].sort(),current=sf;
+ $('strategyFilter').innerHTML='<option value="">All Strategies</option>'+strategies.map(s=>`<option>${esc(s)}</option>`).join('');$('strategyFilter').value=current;
+ const list=trades.filter(t=>(!q||(t.symbol+' '+t.strategy+' '+(t.myStrategy||'')).toLowerCase().includes(q))&&(!sf||t.strategy===sf)&&(!rf||t.result===rf)).sort((a,b)=>(b.date+b.time).localeCompare(a.date+a.time));
+ $('tradeBody').innerHTML=list.length?list.map(t=>`<tr><td>${t.date}</td><td>${t.time}</td><td>${esc(t.symbol)}</td><td>${esc(t.strategy)}${t.myStrategy?' · '+esc(t.myStrategy):''}</td><td>${t.side}</td><td>${t.entry}</td><td>${t.sl}</td><td>${t.tp}</td><td>1:${calcRR(t).toFixed(2)}</td><td>${t.risk}%</td><td class="${t.result==='Win'?'win':t.result==='Loss'?'loss':''}">${t.result}</td><td class="${Number(t.pnl)>=0?'win':'loss'}">${money(t.pnl)}</td><td><button class="secondary editTrade" data-id="${t.id}" type="button">Edit</button> <button class="secondary deleteTrade" data-id="${t.id}" type="button">Delete</button></td></tr>`).join(''):'<tr><td colspan="13" class="empty">No trades found.</td></tr>';
 }
-
 function renderLedger(){
- $('ledStart').textContent=money(account.starting);
- $('ledDep').textContent=money(depTotal());
- $('ledWith').textContent=money(withTotal());
- $('ledPnl').textContent=money(pnlTotal());
-
- const events=[];
- deposits.forEach(x=>events.push({date:x.date,type:'Deposit',amount:Number(x.amount),note:x.note||'',id:x.id,sign:1}));
- withdrawals.forEach(x=>events.push({date:x.date,type:'Withdrawal',amount:Number(x.amount),note:x.note||'',id:x.id,sign:-1}));
- trades.forEach(t=>events.push({date:t.date,type:'Trading P&L',amount:Number(t.pnl||0),note:(t.symbol||'')+' '+(t.strategy||''),id:t.id,sign:Number(t.pnl||0)>=0?1:-1,trade:true}));
- events.sort((a,b)=>a.date.localeCompare(b.date)||String(a.id).localeCompare(String(b.id)));
- let run=Number(account.starting||0);
- $('ledgerBody').innerHTML=events.length?events.map(x=>{
-   run+=x.sign*x.amount;
-   const val=x.trade?Number(x.amount):x.sign*x.amount;
-   const action=x.trade?'—':`<button class="secondary deleteLedger" data-type="${x.type}" data-id="${x.id}" type="button">Delete</button>`;
-   return `<tr><td>${x.date}</td><td>${x.type}</td><td class="${val>=0?'win':'loss'}">${money(val)}</td><td>${esc(x.note)}</td><td>${money(run)}</td><td>${action}</td></tr>`;
- }).join(''):'<tr><td colspan="6" class="empty">No ledger entries yet.</td></tr>';
+ $('ledStart').textContent=money(account.starting);$('ledDep').textContent=money(depTotal());$('ledWith').textContent=money(withTotal());$('ledPnl').textContent=money(pnlTotal());
+ const events=[];deposits.forEach(x=>events.push({date:x.date,type:'Deposit',amount:Number(x.amount),note:x.note||'',id:x.id,sign:1}));withdrawals.forEach(x=>events.push({date:x.date,type:'Withdrawal',amount:Number(x.amount),note:x.note||'',id:x.id,sign:-1}));trades.forEach(t=>events.push({date:t.date,type:'Trading P&L',amount:Number(t.pnl||0),note:(t.symbol||'')+' '+(t.strategy||''),id:t.id,sign:Number(t.pnl||0)>=0?1:-1,trade:true}));
+ events.sort((a,b)=>a.date.localeCompare(b.date)||String(a.id).localeCompare(String(b.id)));let run=Number(account.starting||0);
+ $('ledgerBody').innerHTML=events.length?events.map(x=>{run+=x.sign*x.amount;const val=x.trade?Number(x.amount):x.sign*x.amount;const action=x.trade?'—':`<button class="secondary deleteLedger" data-type="${x.type}" data-id="${x.id}" type="button">Delete</button>`;return `<tr><td>${x.date}</td><td>${x.type}</td><td class="${val>=0?'win':'loss'}">${money(val)}</td><td>${esc(x.note)}</td><td>${money(run)}</td><td>${action}</td></tr>`}).join(''):'<tr><td colspan="6" class="empty">No ledger entries yet.</td></tr>';
 }
-
 function openTrade(id){
- $('tradeForm').reset();
- $('tradeId').value=id||'';
- $('fDate').value=today(); $('fTime').value=new Date().toTimeString().slice(0,5);
- $('fSymbol').value='XAUUSD'; $('fRisk').value='1'; $('fPnl').value='0'; $('fSide').value='Buy'; $('fResult').value='Win';
- $('tradeModalTitle').textContent=id?'Edit Trade':'Add Trade';
- if(id){
-   const t=trades.find(x=>String(x.id)===String(id)); if(!t)return;
-   $('fDate').value=t.date;$('fTime').value=t.time;$('fSymbol').value=t.symbol;$('fStrategy').value=t.strategy;
-   $('fMyStrategy').value=t.myStrategy||'';$('fSide').value=t.side;$('fEntry').value=t.entry;$('fSL').value=t.sl;$('fTP').value=t.tp;
-   $('fRisk').value=t.risk;$('fResult').value=t.result;$('fPnl').value=t.pnl;$('fNotes').value=t.notes||'';
- }
- open('tradeModal');
+ $('tradeForm').reset();$('tradeId').value=id||'';$('fDate').value=today();$('fTime').value=new Date().toTimeString().slice(0,5);$('fSymbol').value='XAUUSD';$('fRisk').value='1';$('fPnl').value='0';$('fSide').value='Buy';$('fResult').value='Win';$('tradeModalTitle').textContent=id?'Edit Trade':'Add Trade';
+ if(id){const t=trades.find(x=>String(x.id)===String(id));if(!t)return;$('fDate').value=t.date;$('fTime').value=t.time;$('fSymbol').value=t.symbol;$('fStrategy').value=t.strategy;$('fMyStrategy').value=t.myStrategy||'';$('fSide').value=t.side;$('fEntry').value=t.entry;$('fSL').value=t.sl;$('fTP').value=t.tp;$('fRisk').value=t.risk;$('fResult').value=t.result;$('fPnl').value=t.pnl;$('fNotes').value=t.notes||''}open('tradeModal');
 }
+function openLedgerEntry(type){$('ledgerForm').reset();$('ledgerType').value=type;$('ledgerDate').value=today();$('ledgerTitle').textContent=type;open('ledgerModal')}
 
-function esc(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
-
-document.addEventListener('click',function(e){
- const nav=e.target.closest('.navbtn[data-page]');
- if(nav){showPage(nav.dataset.page);return}
- if(e.target.closest('#menuBtn')){
-   $('sidebar').classList.toggle('open');$('menuBtn').textContent=$('sidebar').classList.contains('open')?'✕':'☰';return;
- }
+document.addEventListener('click',async e=>{
+ const nav=e.target.closest('.navbtn[data-page]');if(nav){showPage(nav.dataset.page);return}
+ if(e.target.closest('#menuBtn')){$('sidebar').classList.toggle('open');$('menuBtn').textContent=$('sidebar').classList.contains('open')?'✕':'☰';return}
  if(e.target.closest('#addTradeSide,#addTradeTop')){openTrade();return}
  const edit=e.target.closest('.editTrade');if(edit){openTrade(edit.dataset.id);return}
- const del=e.target.closest('.deleteTrade');if(del){
-   if(confirm('Delete this trade?')){trades=trades.filter(t=>String(t.id)!==String(del.dataset.id));write(KEYS.trades,trades);renderTrades();renderDashboard();renderLedger()}return;
- }
- const dl=e.target.closest('.deleteLedger');if(dl){
-   if(confirm('Delete this ledger entry?')){
-    const id=String(dl.dataset.id);
-    if(dl.dataset.type==='Deposit')deposits=deposits.filter(x=>String(x.id)!==id);
-    if(dl.dataset.type==='Withdrawal')withdrawals=withdrawals.filter(x=>String(x.id)!==id);
-    write(KEYS.deposits,deposits);write(KEYS.withdrawals,withdrawals);renderLedger();renderDashboard();
-   }return;
- }
+ const del=e.target.closest('.deleteTrade');if(del&&confirm('Delete this trade?')){try{await deleteOne('trade',del.dataset.id);trades=trades.filter(t=>String(t.id)!==String(del.dataset.id));renderTrades();renderDashboard();renderLedger()}catch(err){alert(err.message)}return}
+ const dl=e.target.closest('.deleteLedger');if(dl&&confirm('Delete this ledger entry?')){try{const kind=dl.dataset.type==='Deposit'?'deposit':'withdrawal';await deleteOne(kind,dl.dataset.id);if(kind==='deposit')deposits=deposits.filter(x=>String(x.id)!==String(dl.dataset.id));else withdrawals=withdrawals.filter(x=>String(x.id)!==String(dl.dataset.id));renderLedger();renderDashboard()}catch(err){alert(err.message)}return}
  if(e.target.closest('#accountBtn')){$('startingBalance').value=account.starting||0;open('accountModal');return}
  if(e.target.closest('#depositBtn,#ledgerDeposit')){openLedgerEntry('Deposit');return}
  if(e.target.closest('#withdrawBtn,#ledgerWithdraw')){openLedgerEntry('Withdrawal');return}
@@ -327,43 +349,22 @@ document.addEventListener('click',function(e){
  const c=e.target.closest('[data-close]');if(c){close(c.dataset.close);return}
 });
 
-function openLedgerEntry(type){
- $('ledgerForm').reset();$('ledgerType').value=type;$('ledgerDate').value=today();$('ledgerTitle').textContent=type;open('ledgerModal');
-}
-
-$('tradeForm').addEventListener('submit',function(e){
- e.preventDefault();
- const id=$('tradeId').value||String(Date.now());
- const obj={id,date:$('fDate').value,time:$('fTime').value,symbol:$('fSymbol').value.trim(),strategy:$('fStrategy').value.trim(),
- myStrategy:$('fMyStrategy').value.trim(),side:$('fSide').value,entry:Number($('fEntry').value),sl:Number($('fSL').value),tp:Number($('fTP').value),
- risk:Number($('fRisk').value||0),result:$('fResult').value,pnl:Number($('fPnl').value||0),notes:$('fNotes').value.trim()};
- const i=trades.findIndex(t=>String(t.id)===String(id));if(i>=0)trades[i]=obj;else trades.push(obj);
- write(KEYS.trades,trades);close('tradeModal');renderTrades();renderDashboard();renderLedger();
+$('connectCloud').addEventListener('click',connect);
+$('tradeForm').addEventListener('submit',async e=>{
+ e.preventDefault();const id=$('tradeId').value||String(Date.now());const obj={id,date:$('fDate').value,time:$('fTime').value,symbol:$('fSymbol').value.trim(),strategy:$('fStrategy').value.trim(),myStrategy:$('fMyStrategy').value.trim(),side:$('fSide').value,entry:Number($('fEntry').value),sl:Number($('fSL').value),tp:Number($('fTP').value),risk:Number($('fRisk').value||0),result:$('fResult').value,pnl:Number($('fPnl').value||0),notes:$('fNotes').value.trim()};
+ try{const i=trades.findIndex(t=>String(t.id)===String(id));if(i>=0)trades[i]=obj;else trades.push(obj);await syncOne('trade',obj);close('tradeModal');renderTrades();renderDashboard();renderLedger()}catch(err){alert('Sync error: '+err.message)}
 });
-
-$('accountForm').addEventListener('submit',function(e){e.preventDefault();account={starting:Number($('startingBalance').value||0)};write(KEYS.account,account);close('accountModal');renderDashboard();renderLedger()});
-
-$('ledgerForm').addEventListener('submit',function(e){
- e.preventDefault();
- const type=$('ledgerType').value, item={id:String(Date.now()),date:$('ledgerDate').value,amount:Number($('ledgerAmount').value||0),note:$('ledgerNote').value.trim()};
- if(type==='Deposit')deposits.push(item);else withdrawals.push(item);
- write(KEYS.deposits,deposits);write(KEYS.withdrawals,withdrawals);close('ledgerModal');renderDashboard();renderLedger();
-});
-
+$('accountForm').addEventListener('submit',async e=>{e.preventDefault();try{account={starting:Number($('startingBalance').value||0)};await syncOne('account',account);close('accountModal');renderDashboard();renderLedger()}catch(err){alert(err.message)}});
+$('ledgerForm').addEventListener('submit',async e=>{e.preventDefault();const type=$('ledgerType').value,item={id:String(Date.now()),date:$('ledgerDate').value,amount:Number($('ledgerAmount').value||0),note:$('ledgerNote').value.trim()};try{if(type==='Deposit'){deposits.push(item);await syncOne('deposit',item)}else{withdrawals.push(item);await syncOne('withdrawal',item)}close('ledgerModal');renderDashboard();renderLedger()}catch(err){alert(err.message)}});
 ['tradeSearch','strategyFilter','resultFilter'].forEach(id=>$(id).addEventListener('input',renderTrades));
-
 document.querySelectorAll('.modal').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)close(m.id)}));
 
-renderDashboard();renderTrades();renderLedger();
-
+(async function init(){
+ const url=localStorage.getItem('tj_sb_url'),key=localStorage.getItem('tj_sb_key');
+ if(url&&key){$('sbUrl').value=url;$('sbKey').value=key}
+ loadLocal();
 })();
-</script>
-<script>
-if ('serviceWorker' in navigator && location.protocol !== 'file:') {
-  window.addEventListener('load', function () {
-    navigator.serviceWorker.register('./sw.js').catch(function(){});
-  });
-}
-</script>
+})();
+</script></script>
 </body>
 </html>
