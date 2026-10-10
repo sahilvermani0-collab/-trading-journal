@@ -50,6 +50,7 @@ th{background:#f8fafc;color:#475569;font-size:12px}
 .ledger-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
 .ledger-summary .card{padding:13px}
 .note{font-size:12px;color:#64748b;margin-top:8px}
+
 @media(max-width:760px){
  .topbar{padding:0 12px}.brand{font-size:17px}.top-actions button{padding:9px 10px;font-size:12px}
  .layout{display:block}.sidebar{position:fixed;top:62px;bottom:0;left:-250px;width:240px;z-index:50;box-shadow:8px 0 25px rgba(0,0,0,.12);transition:left .2s}
@@ -60,310 +61,1619 @@ th{background:#f8fafc;color:#475569;font-size:12px}
  h1{font-size:21px}
 }
 
-.cloud-gate{position:fixed;inset:0;background:#f5f7fb;z-index:9999;display:flex;align-items:center;justify-content:center;padding:18px}
-.cloud-box{width:min(520px,100%);background:#fff;border:1px solid #e5e7eb;border-radius:18px;padding:22px;box-shadow:0 15px 45px rgba(15,23,42,.12)}
-.cloud-box h2{margin:0 0 8px}.cloud-box p{color:#64748b;font-size:13px;line-height:1.5}.cloud-box input{width:100%;padding:12px;border:1px solid #d7dce5;border-radius:10px;margin:6px 0 10px}.cloud-box button{border:0;border-radius:10px;padding:12px 15px;background:#2563eb;color:#fff;font-weight:800}.cloud-status{font-size:12px;margin-top:10px;color:#64748b}.sync-pill{font-size:11px;background:#e8f5ee;color:#047857;border-radius:999px;padding:5px 8px;font-weight:800}
+.cloud-gate{
+ position:fixed;
+ inset:0;
+ background:#f5f7fb;
+ z-index:9999;
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ padding:18px
+}
 
+.cloud-box{
+ width:min(520px,100%);
+ background:#fff;
+ border:1px solid #e5e7eb;
+ border-radius:18px;
+ padding:22px;
+ box-shadow:0 15px 45px rgba(15,23,42,.12)
+}
+
+.cloud-box h2{margin:0 0 8px}
+.cloud-box p{color:#64748b;font-size:13px;line-height:1.5}
+.cloud-box input{
+ width:100%;
+ padding:12px;
+ border:1px solid #d7dce5;
+ border-radius:10px;
+ margin:6px 0 10px
+}
+.cloud-box button{
+ border:0;
+ border-radius:10px;
+ padding:12px 15px;
+ background:#2563eb;
+ color:#fff;
+ font-weight:800
+}
+.cloud-status{font-size:12px;margin-top:10px;color:#64748b}
+.sync-pill{
+ font-size:11px;
+ background:#e8f5ee;
+ color:#047857;
+ border-radius:999px;
+ padding:5px 8px;
+ font-weight:800
+}
+</style>
 </head>
+
 <body>
 
 <div class="cloud-gate" id="cloudGate">
   <div class="cloud-box">
     <h2>☁️ Trading Journal Cloud Sync</h2>
-    <p>Phone aur PC par same data ke liye Supabase connect karo. Sirf <b>Project URL</b> aur <b>Publishable/anon key</b> use karo. <b>Service-role/secret key kabhi mat daalna.</b></p>
+
+    <p>
+      Phone aur PC par same data ke liye Supabase connect karo.
+      Sirf <b>Project URL</b> aur <b>Publishable/anon key</b> use karo.
+      <b>Service-role/secret key kabhi mat daalna.</b>
+    </p>
+
     <label><b>Supabase Project URL</b></label>
-    <input id="sbUrl" value="https://nmwbnwngetmsyejskhap.supabase.co" placeholder="https://xxxxx.supabase.co" autocomplete="off">
+
+    <input
+      id="sbUrl"
+      value="https://nmwbnwngetmsyejskhap.supabase.co"
+      placeholder="https://xxxxx.supabase.co"
+      autocomplete="off"
+    >
+
     <label><b>Supabase Publishable / anon Key</b></label>
-    <input id="sbKey" value="sb_publishable_HYUuSYlojGnsmGeHOypSDQ_XLRjQFMO" placeholder="sb_publishable_... or anon key" autocomplete="off">
-    <button id="connectCloud" type="button">Connect Cloud</button>
-    <div class="cloud-status" id="cloudStatus">Cloud connection required for cross-device sync.</div>
+
+    <input
+      id="sbKey"
+      value="sb_publishable_HYUuSYlojGnsmGeHOypSDQ_XLRjQFMO"
+      placeholder="sb_publishable_... or anon key"
+      autocomplete="off"
+    >
+
+    <button id="connectCloud" type="button">
+      Connect Cloud
+    </button>
+
+    <div class="cloud-status" id="cloudStatus">
+      Cloud connection required for cross-device sync.
+    </div>
   </div>
 </div>
 
 <div class="app">
+
 <header class="topbar">
+
   <button class="menu" id="menuBtn" type="button">☰</button>
-  <div class="brand">📊 Trading Journal <span class="sync-pill" id="syncPill">Cloud</span></div>
+
+  <div class="brand">
+    📊 Trading Journal
+    <span class="sync-pill" id="syncPill">Cloud</span>
+  </div>
+
   <div class="top-actions">
     <button id="accountBtn" type="button">Account</button>
     <button id="depositBtn" class="green" type="button">Deposit</button>
     <button id="withdrawBtn" class="red" type="button">Withdraw</button>
   </div>
+
 </header>
 
 <div class="layout">
+
 <aside class="sidebar" id="sidebar">
-  <button class="navbtn active" data-page="dashboard" type="button">🏠 Dashboard</button>
-  <button class="navbtn" data-page="trades" type="button">📋 Trade History</button>
-  <button class="navbtn" data-page="ledger" type="button">📒 Ledger</button>
-  <button class="navbtn" id="addTradeSide" type="button">➕ Add Trade</button>
+
+  <button class="navbtn active" data-page="dashboard" type="button">
+    🏠 Dashboard
+  </button>
+
+  <button class="navbtn" data-page="trades" type="button">
+    📋 Trade History
+  </button>
+
+  <button class="navbtn" data-page="ledger" type="button">
+    📒 Ledger
+  </button>
+
+  <button class="navbtn" id="addTradeSide" type="button">
+    ➕ Add Trade
+  </button>
+
 </aside>
 
 <main class="main">
+
 <section id="dashboard" class="page active">
+
   <h1>Dashboard</h1>
+
   <div class="cards">
-    <div class="card"><div class="label">CURRENT BALANCE</div><div class="value" id="dashBalance">₹0.00</div></div>
-    <div class="card"><div class="label">TOTAL TRADES</div><div class="value" id="dashTrades">0</div></div>
-    <div class="card"><div class="label">WIN RATE</div><div class="value" id="dashWin">0%</div></div>
-    <div class="card"><div class="label">TRADING P&L</div><div class="value" id="dashPnl">₹0.00</div></div>
+
+    <div class="card">
+      <div class="label">CURRENT BALANCE</div>
+      <div class="value" id="dashBalance">₹0.00</div>
+    </div>
+
+    <div class="card">
+      <div class="label">TOTAL TRADES</div>
+      <div class="value" id="dashTrades">0</div>
+    </div>
+
+    <div class="card">
+      <div class="label">WIN RATE</div>
+      <div class="value" id="dashWin">0%</div>
+    </div>
+
+    <div class="card">
+      <div class="label">TRADING P&L</div>
+      <div class="value" id="dashPnl">₹0.00</div>
+    </div>
+
   </div>
+
   <div class="card">
     <h3 style="margin-top:0">Recent Trades</h3>
     <div id="recentTrades"></div>
   </div>
+
 </section>
 
 <section id="trades" class="page">
+
   <h1>Trade History</h1>
+
   <div class="toolbar">
+
     <input id="tradeSearch" placeholder="Search strategy / symbol">
-    <select id="strategyFilter"><option value="">All Strategies</option></select>
-    <select id="resultFilter"><option value="">All Results</option><option>Win</option><option>Loss</option><option>BE</option></select>
-    <button class="primary" id="addTradeTop" type="button">＋ Add Trade</button>
+
+    <select id="strategyFilter">
+      <option value="">All Strategies</option>
+    </select>
+
+    <select id="resultFilter">
+      <option value="">All Results</option>
+      <option>Win</option>
+      <option>Loss</option>
+      <option>BE</option>
+    </select>
+
+    <button class="primary" id="addTradeTop" type="button">
+      ＋ Add Trade
+    </button>
+
   </div>
-  <div class="tablewrap"><table>
-    <thead><tr><th>Date</th><th>Time</th><th>Symbol</th><th>Strategy</th><th>Buy/Sell</th><th>Entry</th><th>SL</th><th>TP</th><th>R:R</th><th>Risk %</th><th>Result</th><th>P&L</th><th>Actions</th></tr></thead>
-    <tbody id="tradeBody"></tbody>
-  </table></div>
+
+  <div class="tablewrap">
+
+    <table>
+
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Time</th>
+          <th>Symbol</th>
+          <th>Strategy</th>
+          <th>Buy/Sell</th>
+          <th>Entry</th>
+          <th>SL</th>
+          <th>TP</th>
+          <th>R:R</th>
+          <th>Risk %</th>
+          <th>Result</th>
+          <th>P&L</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+
+      <tbody id="tradeBody"></tbody>
+
+    </table>
+
+  </div>
+
 </section>
 
 <section id="ledger" class="page">
+
   <h1>Ledger</h1>
+
   <div class="ledger-summary">
-    <div class="card"><div class="label">STARTING</div><div class="value" id="ledStart">₹0</div></div>
-    <div class="card"><div class="label">DEPOSITS</div><div class="value" id="ledDep">₹0</div></div>
-    <div class="card"><div class="label">WITHDRAWALS</div><div class="value" id="ledWith">₹0</div></div>
-    <div class="card"><div class="label">TRADING P&L</div><div class="value" id="ledPnl">₹0</div></div>
+
+    <div class="card">
+      <div class="label">STARTING</div>
+      <div class="value" id="ledStart">₹0</div>
+    </div>
+
+    <div class="card">
+      <div class="label">DEPOSITS</div>
+      <div class="value" id="ledDep">₹0</div>
+    </div>
+
+    <div class="card">
+      <div class="label">WITHDRAWALS</div>
+      <div class="value" id="ledWith">₹0</div>
+    </div>
+
+    <div class="card">
+      <div class="label">TRADING P&L</div>
+      <div class="value" id="ledPnl">₹0</div>
+    </div>
+
   </div>
+
   <div class="toolbar">
-    <button class="green primary" id="ledgerDeposit" type="button">＋ Deposit</button>
-    <button class="red primary" id="ledgerWithdraw" type="button">− Withdrawal</button>
-    <button class="secondary" id="ledgerBack" type="button">← Dashboard</button>
+
+    <button class="green primary" id="ledgerDeposit" type="button">
+      ＋ Deposit
+    </button>
+
+    <button class="red primary" id="ledgerWithdraw" type="button">
+      − Withdrawal
+    </button>
+
+    <button class="secondary" id="ledgerBack" type="button">
+      ← Dashboard
+    </button>
+
   </div>
-  <div class="tablewrap"><table>
-    <thead><tr><th>Date</th><th>Type</th><th>Amount</th><th>Note</th><th>Running Balance</th><th>Action</th></tr></thead>
-    <tbody id="ledgerBody"></tbody>
-  </table></div>
-  <div class="note">Running balance = starting balance + deposits + trading P&L − withdrawals.</div>
+
+  <div class="tablewrap">
+
+    <table>
+
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Type</th>
+          <th>Amount</th>
+          <th>Note</th>
+          <th>Running Balance</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+
+      <tbody id="ledgerBody"></tbody>
+
+    </table>
+
+  </div>
+
+  <div class="note">
+    Running balance = starting balance + deposits + trading P&L − withdrawals.
+  </div>
+
 </section>
+
 </main>
 </div>
 </div>
 
 <div class="modal" id="tradeModal">
+
  <div class="modalbox">
-  <div class="modalhead"><h2 id="tradeModalTitle">Add Trade</h2><button class="x" data-close="tradeModal" type="button">✕</button></div>
+
+  <div class="modalhead">
+    <h2 id="tradeModalTitle">Add Trade</h2>
+    <button class="x" data-close="tradeModal" type="button">✕</button>
+  </div>
+
   <form id="tradeForm" class="form">
+
    <input type="hidden" id="tradeId">
+
    <div class="formgrid">
-    <div><label>Date</label><input id="fDate" type="date" required></div>
-    <div><label>Time</label><input id="fTime" type="time" required></div>
-    <div><label>Symbol</label><input id="fSymbol" value="XAUUSD" required></div>
-    <div><label>Strategy</label><input id="fStrategy" placeholder="e.g. BB No Touch" required></div>
-    <div><label>My Strategy / TF</label><input id="fMyStrategy" placeholder="e.g. 4M"></div>
-    <div><label>Side</label><select id="fSide"><option>Buy</option><option>Sell</option></select></div>
-    <div><label>Entry</label><input id="fEntry" type="number" step="any" required></div>
-    <div><label>SL</label><input id="fSL" type="number" step="any" required></div>
-    <div><label>TP</label><input id="fTP" type="number" step="any" required></div>
-    <div><label>Risk %</label><input id="fRisk" type="number" step="any" value="1"></div>
-    <div><label>Result</label><select id="fResult"><option>Win</option><option>Loss</option><option>BE</option></select></div>
-    <div><label>P&L</label><input id="fPnl" type="number" step="any" value="0"></div>
-    <div class="full"><label>Notes</label><textarea id="fNotes" rows="3"></textarea></div>
+
+    <div>
+      <label>Date</label>
+      <input id="fDate" type="date" required>
+    </div>
+
+    <div>
+      <label>Time</label>
+      <input id="fTime" type="time" required>
+    </div>
+
+    <div>
+      <label>Symbol</label>
+      <input id="fSymbol" value="XAUUSD" required>
+    </div>
+
+    <div>
+      <label>Strategy</label>
+      <input id="fStrategy" placeholder="e.g. BB No Touch" required>
+    </div>
+
+    <div>
+      <label>My Strategy / TF</label>
+      <input id="fMyStrategy" placeholder="e.g. 4M">
+    </div>
+
+    <div>
+      <label>Side</label>
+      <select id="fSide">
+        <option>Buy</option>
+        <option>Sell</option>
+      </select>
+    </div>
+
+    <div>
+      <label>Entry</label>
+      <input id="fEntry" type="number" step="any" required>
+    </div>
+
+    <div>
+      <label>SL</label>
+      <input id="fSL" type="number" step="any" required>
+    </div>
+
+    <div>
+      <label>TP</label>
+      <input id="fTP" type="number" step="any" required>
+    </div>
+
+    <div>
+      <label>Risk %</label>
+      <input id="fRisk" type="number" step="any" value="1">
+    </div>
+
+    <div>
+      <label>Result</label>
+      <select id="fResult">
+        <option>Win</option>
+        <option>Loss</option>
+        <option>BE</option>
+      </select>
+    </div>
+
+    <div>
+      <label>P&L</label>
+      <input id="fPnl" type="number" step="any" value="0">
+    </div>
+
+    <div class="full">
+      <label>Notes</label>
+      <textarea id="fNotes" rows="3"></textarea>
+    </div>
+
    </div>
-   <div class="actions"><button class="secondary" data-close="tradeModal" type="button">Cancel</button><button class="primary" type="submit">Save Trade</button></div>
+
+   <div class="actions">
+
+    <button class="secondary" data-close="tradeModal" type="button">
+      Cancel
+    </button>
+
+    <button class="primary" type="submit">
+      Save Trade
+    </button>
+
+   </div>
+
   </form>
+
  </div>
+
 </div>
 
 <div class="modal" id="accountModal">
+
  <div class="modalbox">
-  <div class="modalhead"><h2>Account</h2><button class="x" data-close="accountModal" type="button">✕</button></div>
+
+  <div class="modalhead">
+    <h2>Account</h2>
+    <button class="x" data-close="accountModal" type="button">✕</button>
+  </div>
+
   <form id="accountForm" class="form">
-   <label>Starting / Account Balance</label><input id="startingBalance" type="number" step="any" min="0">
-   <div class="note">Current balance automatically includes deposits, withdrawals and trading P&L.</div>
-   <div class="actions"><button class="secondary" data-close="accountModal" type="button">Cancel</button><button class="primary" type="submit">Save</button></div>
+
+   <label>Starting / Account Balance</label>
+
+   <input
+     id="startingBalance"
+     type="number"
+     step="any"
+     min="0"
+   >
+
+   <div class="note">
+     Current balance automatically includes deposits, withdrawals and trading P&L.
+   </div>
+
+   <div class="actions">
+
+    <button class="secondary" data-close="accountModal" type="button">
+      Cancel
+    </button>
+
+    <button class="primary" type="submit">
+      Save
+    </button>
+
+   </div>
+
   </form>
+
  </div>
+
 </div>
 
 <div class="modal" id="ledgerModal">
+
  <div class="modalbox">
-  <div class="modalhead"><h2 id="ledgerTitle">Ledger Entry</h2><button class="x" data-close="ledgerModal" type="button">✕</button></div>
+
+  <div class="modalhead">
+    <h2 id="ledgerTitle">Ledger Entry</h2>
+    <button class="x" data-close="ledgerModal" type="button">✕</button>
+  </div>
+
   <form id="ledgerForm" class="form">
+
    <input type="hidden" id="ledgerType">
+
    <div class="formgrid">
-    <div><label>Date</label><input id="ledgerDate" type="date" required></div>
-    <div><label>Amount</label><input id="ledgerAmount" type="number" step="any" min="0" required></div>
-    <div class="full"><label>Note</label><input id="ledgerNote" placeholder="Optional"></div>
+
+    <div>
+      <label>Date</label>
+      <input id="ledgerDate" type="date" required>
+    </div>
+
+    <div>
+      <label>Amount</label>
+      <input id="ledgerAmount" type="number" step="any" min="0" required>
+    </div>
+
+    <div class="full">
+      <label>Note</label>
+      <input id="ledgerNote" placeholder="Optional">
+    </div>
+
    </div>
-   <div class="actions"><button class="secondary" data-close="ledgerModal" type="button">Cancel</button><button class="primary" type="submit">Save Entry</button></div>
+
+   <div class="actions">
+
+    <button class="secondary" data-close="ledgerModal" type="button">
+      Cancel
+    </button>
+
+    <button class="primary" type="submit">
+      Save Entry
+    </button>
+
+   </div>
+
   </form>
+
  </div>
+
 </div>
 
 <script>
 (function(){
 'use strict';
 
-const KEYS={trades:'tradingJournalTradesV1',account:'tradingJournalAccountV1',deposits:'tradingJournalDepositsV1',withdrawals:'tradingJournalWithdrawalsV1'};
+const KEYS={
+ trades:'tradingJournalTradesV1',
+ account:'tradingJournalAccountV1',
+ deposits:'tradingJournalDepositsV1',
+ withdrawals:'tradingJournalWithdrawalsV1'
+};
+
 const $=id=>document.getElementById(id);
+
 const today=()=>new Date().toISOString().slice(0,10);
-const money=n=>'₹'+Number(n||0).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2});
-const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
-let sb=null, user=null;
-let trades=[], account={starting:0}, deposits=[], withdrawals=[];
+
+const money=n=>'₹'+Number(n||0).toLocaleString('en-IN',{
+ minimumFractionDigits:2,
+ maximumFractionDigits:2
+});
+
+const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({
+ '&':'&amp;',
+ '<':'&lt;',
+ '>':'&gt;',
+ '"':'&quot;',
+ "'":'&#039;'
+}[m]));
+
+let sb=null;
+let user=null;
+
+let trades=[];
+let account={starting:0};
+let deposits=[];
+let withdrawals=[];
 
 function saveLocal(){
-  localStorage.setItem(KEYS.trades,JSON.stringify(trades));
-  localStorage.setItem(KEYS.account,JSON.stringify(account));
-  localStorage.setItem(KEYS.deposits,JSON.stringify(deposits));
-  localStorage.setItem(KEYS.withdrawals,JSON.stringify(withdrawals));
+
+ localStorage.setItem(
+   KEYS.trades,
+   JSON.stringify(trades)
+ );
+
+ localStorage.setItem(
+   KEYS.account,
+   JSON.stringify(account)
+ );
+
+ localStorage.setItem(
+   KEYS.deposits,
+   JSON.stringify(deposits)
+ );
+
+ localStorage.setItem(
+   KEYS.withdrawals,
+   JSON.stringify(withdrawals)
+ );
 }
+
 function loadLocal(){
-  try{trades=JSON.parse(localStorage.getItem(KEYS.trades)||'[]')}catch{trades=[]}
-  try{account=JSON.parse(localStorage.getItem(KEYS.account)||'{"starting":0}')}catch{account={starting:0}}
-  try{deposits=JSON.parse(localStorage.getItem(KEYS.deposits)||'[]')}catch{deposits=[]}
-  try{withdrawals=JSON.parse(localStorage.getItem(KEYS.withdrawals)||'[]')}catch{withdrawals=[]}
+
+ try{
+   trades=JSON.parse(
+     localStorage.getItem(KEYS.trades)||'[]'
+   );
+ }catch{
+   trades=[];
+ }
+
+ try{
+   account=JSON.parse(
+     localStorage.getItem(KEYS.account)||'{"starting":0}'
+   );
+ }catch{
+   account={starting:0};
+ }
+
+ try{
+   deposits=JSON.parse(
+     localStorage.getItem(KEYS.deposits)||'[]'
+   );
+ }catch{
+   deposits=[];
+ }
+
+ try{
+   withdrawals=JSON.parse(
+     localStorage.getItem(KEYS.withdrawals)||'[]'
+   );
+ }catch{
+   withdrawals=[];
+ }
 }
-function pnlTotal(){return trades.reduce((s,t)=>s+Number(t.pnl||0),0)}
-function depTotal(){return deposits.reduce((s,x)=>s+Number(x.amount||0),0)}
-function withTotal(){return withdrawals.reduce((s,x)=>s+Number(x.amount||0),0)}
-function balance(){return Number(account.starting||0)+depTotal()+pnlTotal()-withTotal()}
-function open(id){$(id).classList.add('show')}
-function close(id){$(id).classList.remove('show')}
+
+function pnlTotal(){
+
+ return trades.reduce(
+   (s,t)=>s+Number(t.pnl||0),
+   0
+ );
+}
+
+function depTotal(){
+
+ return deposits.reduce(
+   (s,x)=>s+Number(x.amount||0),
+   0
+ );
+}
+
+function withTotal(){
+
+ return withdrawals.reduce(
+   (s,x)=>s+Number(x.amount||0),
+   0
+ );
+}
+
+function balance(){
+
+ return Number(account.starting||0)
+   +depTotal()
+   +pnlTotal()
+   -withTotal();
+}
+
+function open(id){
+
+ $(id).classList.add('show');
+}
+
+function close(id){
+
+ $(id).classList.remove('show');
+}
 
 async function connect(){
-  const url=$('sbUrl').value.trim(), key=$('sbKey').value.trim();
-  if(!url||!key){$('cloudStatus').textContent='Project URL aur key dono required hain.';return}
-  try{
-    sb=window.supabase.createClient(url,key);
-    localStorage.setItem('tj_sb_url',url);localStorage.setItem('tj_sb_key',key);
-    $('cloudStatus').textContent='Connecting...';
-    const {data,error}=await sb.auth.getSession();
-    if(error) throw error;
-    if(data.session){
-      user=data.session.user; await loadCloud(); unlock();
-    }else{
-      const email=prompt('Supabase account email enter karo:');
-      if(!email)return;
-      const password=prompt('Supabase account password enter karo:');
-      if(!password)return;
-      let r=await sb.auth.signInWithPassword({email,password});
-      if(r.error){
-        const create=confirm('Login nahi hua. Kya isi email se new account create karna hai?');
-        if(!create)return;
-        r=await sb.auth.signUp({email,password});
-        if(r.error)throw r.error;
-        if(!r.data.session){$('cloudStatus').textContent='Email confirmation required. Supabase Auth settings check karo.';return}
-      }
-      user=r.data.user; await loadCloud(); unlock();
-    }
-  }catch(e){$('cloudStatus').textContent='Connection error: '+(e.message||e)}
+
+ const url=$('sbUrl').value.trim();
+ const key=$('sbKey').value.trim();
+
+ if(!url||!key){
+
+   $('cloudStatus').textContent=
+     'Project URL aur key dono required hain.';
+
+   return;
+ }
+
+ try{
+
+   sb=window.supabase.createClient(
+     url,
+     key
+   );
+
+   localStorage.setItem(
+     'tj_sb_url',
+     url
+   );
+
+   localStorage.setItem(
+     'tj_sb_key',
+     key
+   );
+
+   $('cloudStatus').textContent='Connecting...';
+
+   const {
+     data,
+     error
+   }=await sb.auth.getSession();
+
+   if(error) throw error;
+
+   if(data.session){
+
+     user=data.session.user;
+
+     await loadCloud();
+
+     unlock();
+
+   }else{
+
+     const email=prompt(
+       'Supabase account email enter karo:'
+     );
+
+     if(!email)return;
+
+     const password=prompt(
+       'Supabase account password enter karo:'
+     );
+
+     if(!password)return;
+
+     let r=await sb.auth.signInWithPassword({
+       email,
+       password
+     });
+
+     if(r.error){
+
+       const create=confirm(
+         'Login nahi hua. Kya isi email se new account create karna hai?'
+       );
+
+       if(!create)return;
+
+       r=await sb.auth.signUp({
+         email,
+         password
+       });
+
+       if(r.error)throw r.error;
+
+       if(!r.data.session){
+
+         $('cloudStatus').textContent=
+           'Email confirmation required. Supabase Auth settings check karo.';
+
+         return;
+       }
+     }
+
+     user=r.data.user;
+
+     await loadCloud();
+
+     unlock();
+   }
+
+ }catch(e){
+
+   $('cloudStatus').textContent=
+     'Connection error: '+(e.message||e);
+ }
 }
+
 function unlock(){
+
  $('cloudGate').style.display='none';
+
  $('syncPill').textContent='☁ Synced';
- renderDashboard();renderTrades();renderLedger();
- if(sb) sb.auth.onAuthStateChange(()=>{});
+
+ renderDashboard();
+ renderTrades();
+ renderLedger();
+
+ if(sb){
+
+   sb.auth.onAuthStateChange(
+     ()=>{}
+   );
+ }
 }
+
 async function loadCloud(){
- const {data,error}=await sb.from('journal_data').select('*').eq('user_id',user.id);
- if(error) throw error;
- if(!data||!data.length){loadLocal(); await pushAll(); return}
- trades=data.filter(x=>x.kind==='trade').map(x=>x.payload);
- const a=data.find(x=>x.kind==='account'); account=a?.payload||{starting:0};
- deposits=data.filter(x=>x.kind==='deposit').map(x=>x.payload);
- withdrawals=data.filter(x=>x.kind==='withdrawal').map(x=>x.payload);
+
+ const {
+   data,
+   error
+ }=await sb
+   .from('journal_data')
+   .select('*')
+   .eq('user_id',user.id);
+
+ if(error)throw error;
+
+ if(!data||!data.length){
+
+   loadLocal();
+
+   await pushAll();
+
+   return;
+ }
+
+ trades=data
+   .filter(x=>x.kind==='trade')
+   .map(x=>x.payload);
+
+ const a=data.find(
+   x=>x.kind==='account'
+ );
+
+ account=a?.payload||{starting:0};
+
+ deposits=data
+   .filter(x=>x.kind==='deposit')
+   .map(x=>x.payload);
+
+ withdrawals=data
+   .filter(x=>x.kind==='withdrawal')
+   .map(x=>x.payload);
+
  saveLocal();
 }
+
 async function pushAll(){
+
  const rows=[
-  ...trades.map(payload=>({user_id:user.id,kind:'trade',item_id:String(payload.id),payload})),
-  {user_id:user.id,kind:'account',item_id:'account',payload:account},
-  ...deposits.map(payload=>({user_id:user.id,kind:'deposit',item_id:String(payload.id),payload})),
-  ...withdrawals.map(payload=>({user_id:user.id,kind:'withdrawal',item_id:String(payload.id),payload}))
+   ...trades.map(payload=>({
+     user_id:user.id,
+     kind:'trade',
+     item_id:String(payload.id),
+     payload
+   })),
+
+   {
+     user_id:user.id,
+     kind:'account',
+     item_id:'account',
+     payload:account
+   },
+
+   ...deposits.map(payload=>({
+     user_id:user.id,
+     kind:'deposit',
+     item_id:String(payload.id),
+     payload
+   })),
+
+   ...withdrawals.map(payload=>({
+     user_id:user.id,
+     kind:'withdrawal',
+     item_id:String(payload.id),
+     payload
+   }))
  ];
- await sb.from('journal_data').delete().eq('user_id',user.id);
- if(rows.length){const {error}=await sb.from('journal_data').insert(rows);if(error)throw error}
+
+ await sb
+   .from('journal_data')
+   .delete()
+   .eq('user_id',user.id);
+
+ if(rows.length){
+
+   const {
+     error
+   }=await sb
+     .from('journal_data')
+     .insert(rows);
+
+   if(error)throw error;
+ }
+
  saveLocal();
 }
-async function syncOne(kind,payload){
- const row={user_id:user.id,kind,item_id:kind==='account'?'account':String(payload.id),payload};
- const {error}=await sb.from('journal_data').upsert(row,{onConflict:'user_id,kind,item_id'});
+
+async function syncOne(
+ kind,
+ payload
+){
+
+ const row={
+   user_id:user.id,
+   kind,
+   item_id:
+     kind==='account'
+       ?'account'
+       :String(payload.id),
+   payload
+ };
+
+ const {
+   error
+ }=await sb
+   .from('journal_data')
+   .upsert(
+     row,
+     {
+       onConflict:
+         'user_id,kind,item_id'
+     }
+   );
+
  if(error)throw error;
+
  saveLocal();
 }
-async function deleteOne(kind,id){
- const {error}=await sb.from('journal_data').delete().eq('user_id',user.id).eq('kind',kind).eq('item_id',String(id));
+
+async function deleteOne(
+ kind,
+ id
+){
+
+ const {
+   error
+ }=await sb
+   .from('journal_data')
+   .delete()
+   .eq('user_id',user.id)
+   .eq('kind',kind)
+   .eq('item_id',String(id));
+
  if(error)throw error;
+
  saveLocal();
 }
 
 function showPage(name){
- document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+
+ document
+   .querySelectorAll('.page')
+   .forEach(
+     p=>p.classList.remove('active')
+   );
+
  $(name).classList.add('active');
- document.querySelectorAll('.navbtn').forEach(b=>b.classList.toggle('active',b.dataset.page===name));
- $('sidebar').classList.remove('open');$('menuBtn').textContent='☰';
- if(name==='dashboard')renderDashboard();if(name==='trades')renderTrades();if(name==='ledger')renderLedger();
+
+ document
+   .querySelectorAll('.navbtn')
+   .forEach(
+     b=>b.classList.toggle(
+       'active',
+       b.dataset.page===name
+     )
+   );
+
+ $('sidebar').classList.remove('open');
+
+ $('menuBtn').textContent='☰';
+
+ if(name==='dashboard')
+   renderDashboard();
+
+ if(name==='trades')
+   renderTrades();
+
+ if(name==='ledger')
+   renderLedger();
 }
-function calcRR(t){const risk=Math.abs(Number(t.entry)-Number(t.sl)),reward=Math.abs(Number(t.tp)-Number(t.entry));return risk?reward/risk:0}
+
+function calcRR(t){
+
+ const risk=Math.abs(
+   Number(t.entry)-Number(t.sl)
+ );
+
+ const reward=Math.abs(
+   Number(t.tp)-Number(t.entry)
+ );
+
+ return risk?reward/risk:0;
+}
+
 function renderDashboard(){
- $('dashBalance').textContent=money(balance());$('dashTrades').textContent=trades.length;
- const wins=trades.filter(t=>t.result==='Win').length;$('dashWin').textContent=(trades.length?Math.round(wins/trades.length*100):0)+'%';$('dashPnl').textContent=money(pnlTotal());
- const rows=[...trades].sort((a,b)=>(b.date+b.time).localeCompare(a.date+a.time)).slice(0,5);
- $('recentTrades').innerHTML=rows.length?'<div class="tablewrap"><table><thead><tr><th>Date</th><th>Symbol</th><th>Strategy</th><th>Side</th><th>Result</th><th>P&L</th></tr></thead><tbody>'+
- rows.map(t=>`<tr><td>${t.date} ${t.time}</td><td>${esc(t.symbol)}</td><td>${esc(t.strategy)}</td><td>${t.side}</td><td class="${t.result==='Win'?'win':t.result==='Loss'?'loss':''}">${t.result}</td><td>${money(t.pnl)}</td></tr>`).join('')+
- '</tbody></table></div>':'<div class="empty">No trades yet.</div>';
+
+ $('dashBalance').textContent=
+   money(balance());
+
+ $('dashTrades').textContent=
+   trades.length;
+
+ const wins=trades.filter(
+   t=>t.result==='Win'
+ ).length;
+
+ $('dashWin').textContent=
+   (trades.length
+     ?Math.round(
+       wins/trades.length*100
+     )
+     :0)+'%';
+
+ $('dashPnl').textContent=
+   money(pnlTotal());
+
+ const rows=[...trades]
+   .sort(
+     (a,b)=>
+       (b.date+b.time)
+       .localeCompare(a.date+a.time)
+   )
+   .slice(0,5);
+
+ $('recentTrades').innerHTML=
+   rows.length
+     ?'<div class="tablewrap"><table><thead><tr><th>Date</th><th>Symbol</th><th>Strategy</th><th>Side</th><th>Result</th><th>P&L</th></tr></thead><tbody>'+
+       rows.map(t=>
+         `<tr>
+           <td>${t.date} ${t.time}</td>
+           <td>${esc(t.symbol)}</td>
+           <td>${esc(t.strategy)}</td>
+           <td>${t.side}</td>
+           <td class="${t.result==='Win'?'win':t.result==='Loss'?'loss':''}">
+             ${t.result}
+           </td>
+           <td>${money(t.pnl)}</td>
+         </tr>`
+       ).join('')+
+       '</tbody></table></div>'
+     :'<div class="empty">No trades yet.</div>';
 }
+
 function renderTrades(){
- const q=$('tradeSearch').value.toLowerCase().trim(),sf=$('strategyFilter').value,rf=$('resultFilter').value;
- const strategies=[...new Set(trades.map(t=>t.strategy).filter(Boolean))].sort(),current=sf;
- $('strategyFilter').innerHTML='<option value="">All Strategies</option>'+strategies.map(s=>`<option>${esc(s)}</option>`).join('');$('strategyFilter').value=current;
- const list=trades.filter(t=>(!q||(t.symbol+' '+t.strategy+' '+(t.myStrategy||'')).toLowerCase().includes(q))&&(!sf||t.strategy===sf)&&(!rf||t.result===rf)).sort((a,b)=>(b.date+b.time).localeCompare(a.date+a.time));
- $('tradeBody').innerHTML=list.length?list.map(t=>`<tr><td>${t.date}</td><td>${t.time}</td><td>${esc(t.symbol)}</td><td>${esc(t.strategy)}${t.myStrategy?' · '+esc(t.myStrategy):''}</td><td>${t.side}</td><td>${t.entry}</td><td>${t.sl}</td><td>${t.tp}</td><td>1:${calcRR(t).toFixed(2)}</td><td>${t.risk}%</td><td class="${t.result==='Win'?'win':t.result==='Loss'?'loss':''}">${t.result}</td><td class="${Number(t.pnl)>=0?'win':'loss'}">${money(t.pnl)}</td><td><button class="secondary editTrade" data-id="${t.id}" type="button">Edit</button> <button class="secondary deleteTrade" data-id="${t.id}" type="button">Delete</button></td></tr>`).join(''):'<tr><td colspan="13" class="empty">No trades found.</td></tr>';
+
+ const q=$('tradeSearch')
+   .value
+   .toLowerCase()
+   .trim();
+
+ const sf=$('strategyFilter').value;
+ const rf=$('resultFilter').value;
+
+ const strategies=[
+   ...new Set(
+     trades
+       .map(t=>t.strategy)
+       .filter(Boolean)
+   )
+ ].sort();
+
+ const current=sf;
+
+ $('strategyFilter').innerHTML=
+   '<option value="">All Strategies</option>'+
+   strategies
+     .map(
+       s=>`<option>${esc(s)}</option>`
+     )
+     .join('');
+
+ $('strategyFilter').value=current;
+
+ const list=trades
+   .filter(t=>
+     (!q||
+       (
+         t.symbol+
+         ' '+
+         t.strategy+
+         ' '+
+         (t.myStrategy||'')
+       )
+       .toLowerCase()
+       .includes(q)
+     )&&
+     (!sf||t.strategy===sf)&&
+     (!rf||t.result===rf)
+   )
+   .sort(
+     (a,b)=>
+       (b.date+b.time)
+       .localeCompare(a.date+a.time)
+   );
+
+ $('tradeBody').innerHTML=
+   list.length
+     ?list.map(t=>
+       `<tr>
+         <td>${t.date}</td>
+         <td>${t.time}</td>
+         <td>${esc(t.symbol)}</td>
+         <td>
+           ${esc(t.strategy)}
+           ${t.myStrategy?' · '+esc(t.myStrategy):''}
+         </td>
+         <td>${t.side}</td>
+         <td>${t.entry}</td>
+         <td>${t.sl}</td>
+         <td>${t.tp}</td>
+         <td>1:${calcRR(t).toFixed(2)}</td>
+         <td>${t.risk}%</td>
+         <td class="${t.result==='Win'?'win':t.result==='Loss'?'loss':''}">
+           ${t.result}
+         </td>
+         <td class="${Number(t.pnl)>=0?'win':'loss'}">
+           ${money(t.pnl)}
+         </td>
+         <td>
+           <button
+             class="secondary editTrade"
+             data-id="${t.id}"
+             type="button"
+           >
+             Edit
+           </button>
+
+           <button
+             class="secondary deleteTrade"
+             data-id="${t.id}"
+             type="button"
+           >
+             Delete
+           </button>
+         </td>
+       </tr>`
+     ).join('')
+     :'<tr><td colspan="13" class="empty">No trades found.</td></tr>';
 }
+
 function renderLedger(){
- $('ledStart').textContent=money(account.starting);$('ledDep').textContent=money(depTotal());$('ledWith').textContent=money(withTotal());$('ledPnl').textContent=money(pnlTotal());
- const events=[];deposits.forEach(x=>events.push({date:x.date,type:'Deposit',amount:Number(x.amount),note:x.note||'',id:x.id,sign:1}));withdrawals.forEach(x=>events.push({date:x.date,type:'Withdrawal',amount:Number(x.amount),note:x.note||'',id:x.id,sign:-1}));trades.forEach(t=>events.push({date:t.date,type:'Trading P&L',amount:Number(t.pnl||0),note:(t.symbol||'')+' '+(t.strategy||''),id:t.id,sign:Number(t.pnl||0)>=0?1:-1,trade:true}));
- events.sort((a,b)=>a.date.localeCompare(b.date)||String(a.id).localeCompare(String(b.id)));let run=Number(account.starting||0);
- $('ledgerBody').innerHTML=events.length?events.map(x=>{run+=x.sign*x.amount;const val=x.trade?Number(x.amount):x.sign*x.amount;const action=x.trade?'—':`<button class="secondary deleteLedger" data-type="${x.type}" data-id="${x.id}" type="button">Delete</button>`;return `<tr><td>${x.date}</td><td>${x.type}</td><td class="${val>=0?'win':'loss'}">${money(val)}</td><td>${esc(x.note)}</td><td>${money(run)}</td><td>${action}</td></tr>`}).join(''):'<tr><td colspan="6" class="empty">No ledger entries yet.</td></tr>';
+
+ $('ledStart').textContent=
+   money(account.starting);
+
+ $('ledDep').textContent=
+   money(depTotal());
+
+ $('ledWith').textContent=
+   money(withTotal());
+
+ $('ledPnl').textContent=
+   money(pnlTotal());
+
+ const events=[];
+
+ deposits.forEach(
+   x=>events.push({
+     date:x.date,
+     type:'Deposit',
+     amount:Number(x.amount),
+     note:x.note||'',
+     id:x.id,
+     sign:1
+   })
+ );
+
+ withdrawals.forEach(
+   x=>events.push({
+     date:x.date,
+     type:'Withdrawal',
+     amount:Number(x.amount),
+     note:x.note||'',
+     id:x.id,
+     sign:-1
+   })
+ );
+
+ trades.forEach(
+   t=>events.push({
+     date:t.date,
+     type:'Trading P&L',
+     amount:Number(t.pnl||0),
+     note:(t.symbol||'')+' '+(t.strategy||''),
+     id:t.id,
+     sign:Number(t.pnl||0)>=0?1:-1,
+     trade:true
+   })
+ );
+
+ events.sort(
+   (a,b)=>
+     a.date.localeCompare(b.date)||
+     String(a.id).localeCompare(String(b.id))
+ );
+
+ let run=Number(account.starting||0);
+
+ $('ledgerBody').innerHTML=
+   events.length
+     ?events.map(x=>{
+
+       run+=x.sign*x.amount;
+
+       const val=x.trade
+         ?Number(x.amount)
+         :x.sign*x.amount;
+
+       const action=x.trade
+         ?'—'
+         :`<button
+              class="secondary deleteLedger"
+              data-type="${x.type}"
+              data-id="${x.id}"
+              type="button"
+            >
+              Delete
+            </button>`;
+
+       return `<tr>
+         <td>${x.date}</td>
+         <td>${x.type}</td>
+         <td class="${val>=0?'win':'loss'}">
+           ${money(val)}
+         </td>
+         <td>${esc(x.note)}</td>
+         <td>${money(run)}</td>
+         <td>${action}</td>
+       </tr>`;
+
+     }).join('')
+     :'<tr><td colspan="6" class="empty">No ledger entries yet.</td></tr>';
 }
+
 function openTrade(id){
- $('tradeForm').reset();$('tradeId').value=id||'';$('fDate').value=today();$('fTime').value=new Date().toTimeString().slice(0,5);$('fSymbol').value='XAUUSD';$('fRisk').value='1';$('fPnl').value='0';$('fSide').value='Buy';$('fResult').value='Win';$('tradeModalTitle').textContent=id?'Edit Trade':'Add Trade';
- if(id){const t=trades.find(x=>String(x.id)===String(id));if(!t)return;$('fDate').value=t.date;$('fTime').value=t.time;$('fSymbol').value=t.symbol;$('fStrategy').value=t.strategy;$('fMyStrategy').value=t.myStrategy||'';$('fSide').value=t.side;$('fEntry').value=t.entry;$('fSL').value=t.sl;$('fTP').value=t.tp;$('fRisk').value=t.risk;$('fResult').value=t.result;$('fPnl').value=t.pnl;$('fNotes').value=t.notes||''}open('tradeModal');
+
+ $('tradeForm').reset();
+
+ $('tradeId').value=id||'';
+
+ $('fDate').value=today();
+
+ $('fTime').value=
+   new Date()
+     .toTimeString()
+     .slice(0,5);
+
+ $('fSymbol').value='XAUUSD';
+
+ $('fRisk').value='1';
+
+ $('fPnl').value='0';
+
+ $('fSide').value='Buy';
+
+ $('fResult').value='Win';
+
+ $('tradeModalTitle').textContent=
+   id?'Edit Trade':'Add Trade';
+
+ if(id){
+
+   const t=trades.find(
+     x=>String(x.id)===String(id)
+   );
+
+   if(!t)return;
+
+   $('fDate').value=t.date;
+   $('fTime').value=t.time;
+   $('fSymbol').value=t.symbol;
+   $('fStrategy').value=t.strategy;
+   $('fMyStrategy').value=t.myStrategy||'';
+   $('fSide').value=t.side;
+   $('fEntry').value=t.entry;
+   $('fSL').value=t.sl;
+   $('fTP').value=t.tp;
+   $('fRisk').value=t.risk;
+   $('fResult').value=t.result;
+   $('fPnl').value=t.pnl;
+   $('fNotes').value=t.notes||'';
+ }
+
+ open('tradeModal');
 }
-function openLedgerEntry(type){$('ledgerForm').reset();$('ledgerType').value=type;$('ledgerDate').value=today();$('ledgerTitle').textContent=type;open('ledgerModal')}
 
-document.addEventListener('click',async e=>{
- const nav=e.target.closest('.navbtn[data-page]');if(nav){showPage(nav.dataset.page);return}
- if(e.target.closest('#menuBtn')){$('sidebar').classList.toggle('open');$('menuBtn').textContent=$('sidebar').classList.contains('open')?'✕':'☰';return}
- if(e.target.closest('#addTradeSide,#addTradeTop')){openTrade();return}
- const edit=e.target.closest('.editTrade');if(edit){openTrade(edit.dataset.id);return}
- const del=e.target.closest('.deleteTrade');if(del&&confirm('Delete this trade?')){try{await deleteOne('trade',del.dataset.id);trades=trades.filter(t=>String(t.id)!==String(del.dataset.id));renderTrades();renderDashboard();renderLedger()}catch(err){alert(err.message)}return}
- const dl=e.target.closest('.deleteLedger');if(dl&&confirm('Delete this ledger entry?')){try{const kind=dl.dataset.type==='Deposit'?'deposit':'withdrawal';await deleteOne(kind,dl.dataset.id);if(kind==='deposit')deposits=deposits.filter(x=>String(x.id)!==String(dl.dataset.id));else withdrawals=withdrawals.filter(x=>String(x.id)!==String(dl.dataset.id));renderLedger();renderDashboard()}catch(err){alert(err.message)}return}
- if(e.target.closest('#accountBtn')){$('startingBalance').value=account.starting||0;open('accountModal');return}
- if(e.target.closest('#depositBtn,#ledgerDeposit')){openLedgerEntry('Deposit');return}
- if(e.target.closest('#withdrawBtn,#ledgerWithdraw')){openLedgerEntry('Withdrawal');return}
- if(e.target.closest('#ledgerBack')){showPage('dashboard');return}
- const c=e.target.closest('[data-close]');if(c){close(c.dataset.close);return}
-});
+function openLedgerEntry(type){
 
-$('connectCloud').addEventListener('click',connect);
-$('tradeForm').addEventListener('submit',async e=>{
- e.preventDefault();const id=$('tradeId').value||String(Date.now());const obj={id,date:$('fDate').value,time:$('fTime').value,symbol:$('fSymbol').value.trim(),strategy:$('fStrategy').value.trim(),myStrategy:$('fMyStrategy').value.trim(),side:$('fSide').value,entry:Number($('fEntry').value),sl:Number($('fSL').value),tp:Number($('fTP').value),risk:Number($('fRisk').value||0),result:$('fResult').value,pnl:Number($('fPnl').value||0),notes:$('fNotes').value.trim()};
- try{const i=trades.findIndex(t=>String(t.id)===String(id));if(i>=0)trades[i]=obj;else trades.push(obj);await syncOne('trade',obj);close('tradeModal');renderTrades();renderDashboard();renderLedger()}catch(err){alert('Sync error: '+err.message)}
-});
-$('accountForm').addEventListener('submit',async e=>{e.preventDefault();try{account={starting:Number($('startingBalance').value||0)};await syncOne('account',account);close('accountModal');renderDashboard();renderLedger()}catch(err){alert(err.message)}});
-$('ledgerForm').addEventListener('submit',async e=>{e.preventDefault();const type=$('ledgerType').value,item={id:String(Date.now()),date:$('ledgerDate').value,amount:Number($('ledgerAmount').value||0),note:$('ledgerNote').value.trim()};try{if(type==='Deposit'){deposits.push(item);await syncOne('deposit',item)}else{withdrawals.push(item);await syncOne('withdrawal',item)}close('ledgerModal');renderDashboard();renderLedger()}catch(err){alert(err.message)}});
-['tradeSearch','strategyFilter','resultFilter'].forEach(id=>$(id).addEventListener('input',renderTrades));
-document.querySelectorAll('.modal').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)close(m.id)}));
+ $('ledgerForm').reset();
+
+ $('ledgerType').value=type;
+
+ $('ledgerDate').value=today();
+
+ $('ledgerTitle').textContent=type;
+
+ open('ledgerModal');
+}
+
+document.addEventListener(
+ 'click',
+ async e=>{
+
+   const nav=e.target.closest(
+     '.navbtn[data-page]'
+   );
+
+   if(nav){
+
+     showPage(nav.dataset.page);
+
+     return;
+   }
+
+   if(e.target.closest('#menuBtn')){
+
+     $('sidebar').classList.toggle('open');
+
+     $('menuBtn').textContent=
+       $('sidebar').classList.contains('open')
+         ?'✕'
+         :'☰';
+
+     return;
+   }
+
+   if(e.target.closest(
+     '#addTradeSide,#addTradeTop'
+   )){
+
+     openTrade();
+
+     return;
+   }
+
+   const edit=e.target.closest(
+     '.editTrade'
+   );
+
+   if(edit){
+
+     openTrade(edit.dataset.id);
+
+     return;
+   }
+
+   const del=e.target.closest(
+     '.deleteTrade'
+   );
+
+   if(
+     del&&
+     confirm('Delete this trade?')
+   ){
+
+     try{
+
+       await deleteOne(
+         'trade',
+         del.dataset.id
+       );
+
+       trades=trades.filter(
+         t=>String(t.id)!==
+           String(del.dataset.id)
+       );
+
+       renderTrades();
+       renderDashboard();
+       renderLedger();
+
+     }catch(err){
+
+       alert(err.message);
+     }
+
+     return;
+   }
+
+   const dl=e.target.closest(
+     '.deleteLedger'
+   );
+
+   if(
+     dl&&
+     confirm('Delete this ledger entry?')
+   ){
+
+     try{
+
+       const kind=
+         dl.dataset.type==='Deposit'
+           ?'deposit'
+           :'withdrawal';
+
+       await deleteOne(
+         kind,
+         dl.dataset.id
+       );
+
+       if(kind==='deposit'){
+
+         deposits=deposits.filter(
+           x=>String(x.id)!==
+             String(dl.dataset.id)
+         );
+
+       }else{
+
+         withdrawals=withdrawals.filter(
+           x=>String(x.id)!==
+             String(dl.dataset.id)
+         );
+       }
+
+       renderLedger();
+       renderDashboard();
+
+     }catch(err){
+
+       alert(err.message);
+     }
+
+     return;
+   }
+
+   if(e.target.closest('#accountBtn')){
+
+     $('startingBalance').value=
+       account.starting||0;
+
+     open('accountModal');
+
+     return;
+   }
+
+   if(e.target.closest(
+     '#depositBtn,#ledgerDeposit'
+   )){
+
+     openLedgerEntry('Deposit');
+
+     return;
+   }
+
+   if(e.target.closest(
+     '#withdrawBtn,#ledgerWithdraw'
+   )){
+
+     openLedgerEntry('Withdrawal');
+
+     return;
+   }
+
+   if(e.target.closest('#ledgerBack')){
+
+     showPage('dashboard');
+
+     return;
+   }
+
+   const c=e.target.closest('[data-close]');
+
+   if(c){
+
+     close(c.dataset.close);
+
+     return;
+   }
+
+ }
+);
+
+$('connectCloud').addEventListener(
+ 'click',
+ connect
+);
+
+$('tradeForm').addEventListener(
+ 'submit',
+ async e=>{
+
+   e.preventDefault();
+
+   const id=
+     $('tradeId').value||
+     String(Date.now());
+
+   const obj={
+     id,
+     date:$('fDate').value,
+     time:$('fTime').value,
+     symbol:$('fSymbol').value.trim(),
+     strategy:$('fStrategy').value.trim(),
+     myStrategy:$('fMyStrategy').value.trim(),
+     side:$('fSide').value,
+     entry:Number($('fEntry').value),
+     sl:Number($('fSL').value),
+     tp:Number($('fTP').value),
+     risk:Number($('fRisk').value||0),
+     result:$('fResult').value,
+     pnl:Number($('fPnl').value||0),
+     notes:$('fNotes').value.trim()
+   };
+
+   try{
+
+     const i=trades.findIndex(
+       t=>String(t.id)===String(id)
+     );
+
+     if(i>=0)
+       trades[i]=obj;
+     else
+       trades.push(obj);
+
+     await syncOne(
+       'trade',
+       obj
+     );
+
+     close('tradeModal');
+
+     renderTrades();
+     renderDashboard();
+     renderLedger();
+
+   }catch(err){
+
+     alert(
+       'Sync error: '+err.message
+     );
+   }
+
+ }
+);
+
+$('accountForm').addEventListener(
+ 'submit',
+ async e=>{
+
+   e.preventDefault();
+
+   try{
+
+     account={
+       starting:Number(
+         $('startingBalance').value||0
+       )
+     };
+
+     await syncOne(
+       'account',
+       account
+     );
+
+     close('accountModal');
+
+     renderDashboard();
+     renderLedger();
+
+   }catch(err){
+
+     alert(err.message);
+   }
+
+ }
+);
+
+$('ledgerForm').addEventListener(
+ 'submit',
+ async e=>{
+
+   e.preventDefault();
+
+   const type=$('ledgerType').value;
+
+   const item={
+     id:String(Date.now()),
+     date:$('ledgerDate').value,
+     amount:Number(
+       $('ledgerAmount').value||0
+     ),
+     note:$('ledgerNote').value.trim()
+   };
+
+   try{
+
+     if(type==='Deposit'){
+
+       deposits.push(item);
+
+       await syncOne(
+         'deposit',
+         item
+       );
+
+     }else{
+
+       withdrawals.push(item);
+
+       await syncOne(
+         'withdrawal',
+         item
+       );
+     }
+
+     close('ledgerModal');
+
+     renderDashboard();
+     renderLedger();
+
+   }catch(err){
+
+     alert(err.message);
+   }
+
+ }
+);
+
+[
+ 'tradeSearch',
+ 'strategyFilter',
+ 'resultFilter'
+].forEach(
+ id=>$(id).addEventListener(
+   'input',
+   renderTrades
+ )
+);
+
+document
+ .querySelectorAll('.modal')
+ .forEach(
+   m=>m.addEventListener(
+     'click',
+     e=>{
+       if(e.target===m)
+         close(m.id);
+     }
+   )
+ );
 
 (async function init(){
- const url=localStorage.getItem('tj_sb_url'),key=localStorage.getItem('tj_sb_key');
- if(url&&key){$('sbUrl').value=url;$('sbKey').value=key}
+
+ const url=
+   localStorage.getItem('tj_sb_url');
+
+ const key=
+   localStorage.getItem('tj_sb_key');
+
+ if(url&&key){
+
+   $('sbUrl').value=url;
+   $('sbKey').value=key;
+ }
+
  loadLocal();
+
+})();
+
 })();
 </script>
+
 </body>
 </html>
